@@ -4,7 +4,7 @@ from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.dependencies import get_current_active_user, get_optional_current_user
+from app.core.dependencies import get_current_active_user, get_optional_current_user, require_roles
 from app.models.user import User
 from app.schemas.product import (
     ProductCreateRequest,
@@ -25,7 +25,7 @@ router = APIRouter(prefix="/products", tags=["Product Management & Verification 
 def create_product(
     req: ProductCreateRequest,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(require_roles(["PRODUCER", "ADMIN"]))
 ):
     """Register a new product batch with unique EchoChain product ID and QR code."""
     return ProductService.create_product(db, current_user, req)
@@ -38,6 +38,29 @@ def get_producer_stats(
 ):
     """Retrieve dashboard statistics for the logged-in producer or admin."""
     return ProductService.get_stats(db, current_user)
+
+
+@router.get("/my-products", response_model=PaginatedProductResponse)
+def list_my_products(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+    search: Optional[str] = Query(None, description="Search by name, brand, or batch ID"),
+    product_type: Optional[str] = Query(None, description="Filter by product category"),
+    verification_status: Optional[str] = Query(None, description="Filter by verification state"),
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1, le=100)
+):
+    """List products owned by current logged-in producer."""
+    return ProductService.list_products(
+        db,
+        current_user=current_user,
+        producer_only=True,
+        search=search,
+        product_type=product_type,
+        verification_status=verification_status,
+        page=page,
+        limit=limit
+    )
 
 
 @router.get("", response_model=PaginatedProductResponse)
@@ -95,7 +118,7 @@ def update_product(
     product_id: int,
     req: ProductUpdateRequest,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(require_roles(["PRODUCER", "ADMIN"]))
 ):
     """Update product batch metadata (Producer/Admin only)."""
     return ProductService.update_product(db, product_id, current_user, req)
@@ -105,7 +128,7 @@ def update_product(
 def delete_product(
     product_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(require_roles(["PRODUCER", "ADMIN"]))
 ):
     """Delete product batch (Producer/Admin only)."""
     ProductService.delete_product(db, product_id, current_user)

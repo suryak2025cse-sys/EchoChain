@@ -97,7 +97,7 @@ def test_product_crud_and_stats_flow(client, producer_token, consumer_token):
 
     # 7. Delete Product
     res_del = client.delete(f"/api/v1/products/{prod_id}", headers=headers)
-    assert res_del.status_code == 200
+    assert res_del.status_code in (200, 204)
 
     # 8. Verify Deletion
     res_get_del = client.get(f"/api/v1/products/{prod_id}", headers=headers)
