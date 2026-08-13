@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.database import get_db, engine, Base
 from app.api.router import api_router
+from app.api.v1 import provenance, ipfs, polygon, verify
 from app.schemas.health import HealthCheckResponse
 from app.services.health_service import HealthService
 
@@ -28,8 +29,14 @@ if settings.BACKEND_CORS_ORIGINS:
         allow_headers=["*"],
     )
 
-# Include API Router
+# Include API Router under /api/v1
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+# Direct root-level aliases required by Phase specs (/api/provenance, /api/ipfs, /api/polygon, /api/verify)
+app.include_router(provenance.router, prefix="/api", include_in_schema=False)
+app.include_router(ipfs.router, prefix="/api", include_in_schema=False)
+app.include_router(polygon.router, prefix="/api", include_in_schema=False)
+app.include_router(verify.router, prefix="/api", include_in_schema=False)
 
 
 @app.get("/api/health", response_model=HealthCheckResponse, tags=["Health"])
