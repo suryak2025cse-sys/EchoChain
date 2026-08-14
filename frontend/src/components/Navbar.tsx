@@ -42,13 +42,20 @@ export const Navbar: React.FC = () => {
         </Link>
 
         {/* Desktop Links */}
-        <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-gray-700 dark:text-gray-200">
+        <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-gray-700 dark:text-gray-200 font-mono">
           <Link to="/" className="hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors">
             Home
           </Link>
-          <a href="/#platform" className="hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors">
-            Platform
-          </a>
+          {isAuthenticated && user?.role === 'PRODUCER' && (
+            <Link to="/producer/dashboard" className="text-emerald-700 dark:text-emerald-400 hover:underline">
+              Producer Dashboard
+            </Link>
+          )}
+          {isAuthenticated && (user?.role === 'CERTIFIER' || user?.role === 'REGULATOR' || user?.role === 'ADMIN') && (
+            <Link to="/certifier/dashboard" className="text-purple-700 dark:text-purple-400 hover:underline">
+              Certifier Dashboard
+            </Link>
+          )}
           <a href="/#how-it-works" className="hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors">
             How It Works
           </a>

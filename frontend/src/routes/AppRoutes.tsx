@@ -155,7 +155,17 @@ export const AppRoutes: React.FC = () => {
           path="/certifier"
           element={
             <ProtectedRoute>
-              <RoleRoute allowedRoles={['CERTIFIER']}>
+              <RoleRoute allowedRoles={['CERTIFIER', 'REGULATOR', 'ADMIN']}>
+                <CertifierDashboardPage />
+              </RoleRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/certifier/dashboard"
+          element={
+            <ProtectedRoute>
+              <RoleRoute allowedRoles={['CERTIFIER', 'REGULATOR', 'ADMIN']}>
                 <CertifierDashboardPage />
               </RoleRoute>
             </ProtectedRoute>

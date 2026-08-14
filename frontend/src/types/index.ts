@@ -1,4 +1,4 @@
-export type UserRole = 'PRODUCER' | 'CONSUMER' | 'CERTIFIER' | 'ADMIN';
+export type UserRole = 'PRODUCER' | 'CONSUMER' | 'CERTIFIER' | 'REGULATOR' | 'ADMIN';
 
 export interface User {
   id: number;
@@ -278,4 +278,50 @@ export interface PublicVerificationResponse {
   blockchain_proof?: Record<string, any>;
   ipfs_storage?: Record<string, any>;
   verified_at: string;
+}
+
+export interface AuditLogEntry {
+  id: number;
+  user_id?: number;
+  action: string;
+  ip_address?: string;
+  user_agent?: string;
+  details?: string;
+  created_at: string;
+}
+
+export interface AuditLogListResponse {
+  items: AuditLogEntry[];
+  total: number;
+}
+
+export interface CertifierDecisionResponse {
+  provenance_id: string;
+  previous_status: string;
+  new_status: string;
+  decision: 'APPROVE' | 'REJECT' | 'FLAG';
+  certifier_id: number;
+  certifier_email: string;
+  certifier_role: string;
+  reason: string;
+  decided_at: string;
+  audit_log_id: number;
+  message: string;
+}
+
+export interface CertifierReviewDetail {
+  provenance_id: string;
+  status: string;
+  is_sealed: boolean;
+  sealed_at?: string;
+  provenance_hash: string;
+  canonical_payload?: string;
+  hash_verification_status: 'VALID' | 'TAMPERED';
+  product: Record<string, any>;
+  audio_capture: Record<string, any>;
+  acoustic_fingerprint: Record<string, any>;
+  liveness_evidence: Record<string, any>;
+  ipfs_metadata?: Record<string, any>;
+  polygon_anchor?: Record<string, any>;
+  audit_trail: AuditLogEntry[];
 }

@@ -1,4 +1,4 @@
-import type { HealthResponse, TokenResponse, User, Product, ProducerStats, PaginatedProducts, AudioRecording, AudioCapture, AcousticFingerprint, LivenessChallenge, LivenessResult, ProvenanceRecord, ProvenanceListResponse, ProvenanceSealResponse, ProvenanceVerificationResponse, IPFSUploadResponse, IPFSResponse, PolygonAnchorResponse, PolygonVerificationResponse, PublicVerificationResponse } from '../types';
+import type { HealthResponse, TokenResponse, User, Product, ProducerStats, PaginatedProducts, AudioRecording, AudioCapture, AcousticFingerprint, LivenessChallenge, LivenessResult, ProvenanceRecord, ProvenanceListResponse, ProvenanceSealResponse, ProvenanceVerificationResponse, IPFSUploadResponse, IPFSResponse, PolygonAnchorResponse, PolygonVerificationResponse, PublicVerificationResponse, CertifierReviewDetail, CertifierDecisionResponse, AuditLogListResponse } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
@@ -775,6 +775,69 @@ export async function getProductQrCodeApi(productId: number): Promise<{ echochai
   const data = await safeParseJson(response);
   if (!response.ok) {
     throw new Error(data.detail || 'Failed to fetch product QR code.');
+  }
+  return data;
+}
+
+export async function fetchCertifierQueueApi(token: string): Promise<ProvenanceListResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/certifier/provenance`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/json',
+    },
+  });
+  const data = await safeParseJson(response);
+  if (!response.ok) {
+    throw new Error(data.detail || 'Failed to fetch certifier review queue.');
+  }
+  return data;
+}
+
+export async function fetchCertifierReviewDetailApi(token: string, identifier: string): Promise<CertifierReviewDetail> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/certifier/provenance/${identifier}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/json',
+    },
+  });
+  const data = await safeParseJson(response);
+  if (!response.ok) {
+    throw new Error(data.detail || 'Failed to fetch certifier review details.');
+  }
+  return data;
+}
+
+export async function decideProvenanceApi(
+  token: string,
+  identifier: string,
+  decision: 'APPROVE' | 'REJECT' | 'FLAG',
+  reason: string
+): Promise<CertifierDecisionResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/certifier/decide/${identifier}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ decision, reason }),
+  });
+  const data = await safeParseJson(response);
+  if (!response.ok) {
+    throw new Error(data.detail || 'Failed to record certifier decision.');
+  }
+  return data;
+}
+
+export async function fetchAuditLogsApi(token: string, limit: number = 50): Promise<AuditLogListResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/certifier/audit-logs?limit=${limit}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/json',
+    },
+  });
+  const data = await safeParseJson(response);
+  if (!response.ok) {
+    throw new Error(data.detail || 'Failed to fetch system audit logs.');
   }
   return data;
 }
