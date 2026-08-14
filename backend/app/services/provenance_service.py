@@ -248,7 +248,8 @@ class ProvenanceService:
 
     @staticmethod
     def list_provenance(db: Session, current_user: User) -> ProvenanceListResponse:
-        if current_user.role and current_user.role.name == "ADMIN":
+        role_name = current_user.role.name if current_user.role else "PRODUCER"
+        if role_name in ["ADMIN", "CERTIFIER", "REGULATOR"]:
             records = provenance_repository.get_multi(db)
         else:
             records = provenance_repository.list_by_producer(db, current_user.id)

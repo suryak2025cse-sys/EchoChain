@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1 import health, auth, products, audio, audio_capture, acoustic, liveness, provenance, ipfs, polygon, verify
+from app.api.v1 import health, auth, products, audio, audio_capture, acoustic, liveness, provenance, ipfs, polygon, verify, certifier
 
 api_router = APIRouter()
 
@@ -15,8 +15,9 @@ api_router.include_router(provenance.router)
 api_router.include_router(ipfs.router)
 api_router.include_router(polygon.router)
 api_router.include_router(verify.router)
+api_router.include_router(certifier.router)
 
-# Direct root-level aliases required by Phase specs (/api/acoustic, /api/liveness, /api/provenance, /api/ipfs, /api/polygon, /api/verify)
+# Direct root-level aliases required by Phase specs (/api/acoustic, /api/liveness, /api/provenance, /api/ipfs, /api/polygon, /api/verify, /api/certifier)
 api_router.include_router(health.router, prefix="", include_in_schema=False)
 api_router.include_router(acoustic.router, prefix="", include_in_schema=False)
 api_router.include_router(liveness.router, prefix="", include_in_schema=False)
@@ -24,3 +25,4 @@ api_router.include_router(provenance.router, prefix="", include_in_schema=False)
 api_router.include_router(ipfs.router, prefix="", include_in_schema=False)
 api_router.include_router(polygon.router, prefix="", include_in_schema=False)
 api_router.include_router(verify.router, prefix="", include_in_schema=False)
+api_router.include_router(certifier.router, prefix="", include_in_schema=False)
