@@ -131,8 +131,14 @@ class AudioCaptureService:
             db,
             action="AUDIO_CAPTURE_UPLOADED",
             user_id=current_user.id,
-            details=f"Uploaded audio capture {capture_id} ({duration}s)"
+            details=f"Uploaded audio evidence {capture_id} ({len(file_bytes)} bytes, {duration:.1f}s)"
         )
+
+        try:
+            from app.services.security_service import SecurityService
+            SecurityService.evaluate_capture_security(db, capture_id, current_user.id)
+        except Exception as e:
+            logger.warning(f"Real-time security evaluation warning: {e}")
 
         return AudioCaptureResponse.model_validate(capture)
 

@@ -10,6 +10,7 @@ from app.models.acoustic_fingerprint import AcousticFingerprint
 from app.models.liveness_challenge import LivenessChallenge
 from app.models.liveness_result import LivenessResult
 from app.models.provenance_record import ProvenanceRecord
+from app.models.security_event import SecurityEvent
 
 __all__ = [
     "BaseModel",
@@ -23,5 +24,6 @@ __all__ = [
     "AcousticFingerprint",
     "LivenessChallenge",
     "LivenessResult",
-    "ProvenanceRecord"
+    "ProvenanceRecord",
+    "SecurityEvent"
 ]

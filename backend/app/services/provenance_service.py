@@ -154,6 +154,12 @@ class ProvenanceService:
             details=f"Created provenance record {provenance_id} (SHA256: {provenance_hash[:10]}...)"
         )
 
+        try:
+            from app.services.security_service import SecurityService
+            SecurityService.evaluate_provenance_security(db, prov_record.provenance_id)
+        except Exception as e:
+            logger.warning(f"Provenance security evaluation warning: {e}")
+
         return ProvenanceRecordResponse.model_validate(prov_record)
 
     @staticmethod
@@ -182,6 +188,12 @@ class ProvenanceService:
             user_id=current_user.id,
             details=f"Sealed provenance record {record.provenance_id} with SHA-256: {record.provenance_hash}"
         )
+
+        try:
+            from app.services.security_service import SecurityService
+            SecurityService.evaluate_provenance_security(db, record.provenance_id)
+        except Exception as e:
+            logger.warning(f"Sealed provenance security evaluation warning: {e}")
 
         return ProvenanceSealResponse(
             provenance_id=record.provenance_id,
