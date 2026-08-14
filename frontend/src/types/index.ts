@@ -325,3 +325,46 @@ export interface CertifierReviewDetail {
   polygon_anchor?: Record<string, any>;
   audit_trail: AuditLogEntry[];
 }
+
+export interface SecurityEvent {
+  id: number;
+  event_id: string;
+  event_type: string;
+  risk_level: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  provenance_id?: string;
+  product_id?: number;
+  capture_id?: string;
+  user_id?: number;
+  detector_name: string;
+  description: string;
+  evidence_json: Record<string, any>;
+  status: 'OPEN' | 'INVESTIGATING' | 'RESOLVED' | 'FALSE_POSITIVE';
+  resolved_by_id?: number;
+  resolved_at?: string;
+  resolution_notes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SecurityEventListResponse {
+  items: SecurityEvent[];
+  total: number;
+}
+
+export interface SecurityMetricsSummary {
+  total_events: number;
+  open_events: number;
+  resolved_events: number;
+  false_positives: number;
+  by_risk_level: Record<string, number>;
+  by_event_type: Record<string, number>;
+}
+
+export interface SecurityScanResult {
+  scanned_records: number;
+  scanned_captures: number;
+  scanned_challenges: number;
+  events_generated: number;
+  new_events: SecurityEvent[];
+  summary_message: string;
+}

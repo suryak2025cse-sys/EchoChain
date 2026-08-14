@@ -1,4 +1,4 @@
-import type { HealthResponse, TokenResponse, User, Product, ProducerStats, PaginatedProducts, AudioRecording, AudioCapture, AcousticFingerprint, LivenessChallenge, LivenessResult, ProvenanceRecord, ProvenanceListResponse, ProvenanceSealResponse, ProvenanceVerificationResponse, IPFSUploadResponse, IPFSResponse, PolygonAnchorResponse, PolygonVerificationResponse, PublicVerificationResponse, CertifierReviewDetail, CertifierDecisionResponse, AuditLogListResponse } from '../types';
+import type { HealthResponse, TokenResponse, User, Product, ProducerStats, PaginatedProducts, AudioRecording, AudioCapture, AcousticFingerprint, LivenessChallenge, LivenessResult, ProvenanceRecord, ProvenanceListResponse, ProvenanceSealResponse, ProvenanceVerificationResponse, IPFSUploadResponse, IPFSResponse, PolygonAnchorResponse, PolygonVerificationResponse, PublicVerificationResponse, CertifierReviewDetail, CertifierDecisionResponse, AuditLogListResponse, SecurityEvent, SecurityEventListResponse, SecurityMetricsSummary, SecurityScanResult } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
@@ -838,6 +838,80 @@ export async function fetchAuditLogsApi(token: string, limit: number = 50): Prom
   const data = await safeParseJson(response);
   if (!response.ok) {
     throw new Error(data.detail || 'Failed to fetch system audit logs.');
+  }
+  return data;
+}
+
+export async function fetchSecurityEventsApi(
+  token: string,
+  params?: { riskLevel?: string; eventType?: string; status?: string; limit?: number; skip?: number }
+): Promise<SecurityEventListResponse> {
+  const q = new URLSearchParams();
+  if (params?.riskLevel) q.append('risk_level', params.riskLevel);
+  if (params?.eventType) q.append('event_type', params.eventType);
+  if (params?.status) q.append('status', params.status);
+  if (params?.limit) q.append('limit', params.limit.toString());
+  if (params?.skip) q.append('skip', params.skip.toString());
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/security/events?${q.toString()}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/json',
+    },
+  });
+  const data = await safeParseJson(response);
+  if (!response.ok) {
+    throw new Error(data.detail || 'Failed to fetch security threat events.');
+  }
+  return data;
+}
+
+export async function fetchSecurityMetricsApi(token: string): Promise<SecurityMetricsSummary> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/security/metrics`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/json',
+    },
+  });
+  const data = await safeParseJson(response);
+  if (!response.ok) {
+    throw new Error(data.detail || 'Failed to fetch security metrics summary.');
+  }
+  return data;
+}
+
+export async function runSecurityScanApi(token: string): Promise<SecurityScanResult> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/security/scan`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/json',
+    },
+  });
+  const data = await safeParseJson(response);
+  if (!response.ok) {
+    throw new Error(data.detail || 'Failed to execute security audit scan.');
+  }
+  return data;
+}
+
+export async function resolveSecurityEventApi(
+  token: string,
+  eventId: string,
+  targetStatus: 'RESOLVED' | 'FALSE_POSITIVE' | 'INVESTIGATING',
+  resolutionNotes: string
+): Promise<SecurityEvent> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/security/events/${eventId}/resolve`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ status: targetStatus, resolution_notes: resolutionNotes }),
+  });
+  const data = await safeParseJson(response);
+  if (!response.ok) {
+    throw new Error(data.detail || 'Failed to update security event status.');
   }
   return data;
 }

@@ -18,6 +18,7 @@ import { ProvenanceDetailPage } from '../pages/ProvenanceDetailPage';
 import { PublicProductVerificationPage } from '../pages/PublicProductVerificationPage';
 import { ProvenanceListPage } from '../pages/ProvenanceListPage';
 import { CertifierDashboardPage } from '../pages/CertifierDashboardPage';
+import { SecurityDashboardPage } from '../pages/SecurityDashboardPage';
 import { AdminDashboardPage } from '../pages/AdminDashboardPage';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 import { RoleRoute } from '../components/RoleRoute';
@@ -167,6 +168,28 @@ export const AppRoutes: React.FC = () => {
             <ProtectedRoute>
               <RoleRoute allowedRoles={['CERTIFIER', 'REGULATOR', 'ADMIN']}>
                 <CertifierDashboardPage />
+              </RoleRoute>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Security & Fraud Monitor Routes */}
+        <Route
+          path="/security"
+          element={
+            <ProtectedRoute>
+              <RoleRoute allowedRoles={['CERTIFIER', 'REGULATOR', 'ADMIN']}>
+                <SecurityDashboardPage />
+              </RoleRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/security/dashboard"
+          element={
+            <ProtectedRoute>
+              <RoleRoute allowedRoles={['CERTIFIER', 'REGULATOR', 'ADMIN']}>
+                <SecurityDashboardPage />
               </RoleRoute>
             </ProtectedRoute>
           }

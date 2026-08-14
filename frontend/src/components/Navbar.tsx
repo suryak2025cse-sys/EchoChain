@@ -52,9 +52,14 @@ export const Navbar: React.FC = () => {
             </Link>
           )}
           {isAuthenticated && (user?.role === 'CERTIFIER' || user?.role === 'REGULATOR' || user?.role === 'ADMIN') && (
-            <Link to="/certifier/dashboard" className="text-purple-700 dark:text-purple-400 hover:underline">
-              Certifier Dashboard
-            </Link>
+            <>
+              <Link to="/certifier/dashboard" className="text-purple-700 dark:text-purple-400 hover:underline">
+                Certifier Dashboard
+              </Link>
+              <Link to="/security/dashboard" className="text-red-700 dark:text-red-400 hover:underline flex items-center gap-1">
+                Security Monitor
+              </Link>
+            </>
           )}
           <a href="/#how-it-works" className="hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors">
             How It Works
