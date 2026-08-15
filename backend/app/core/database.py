@@ -2,13 +2,14 @@ import logging
 from typing import Generator
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.pool import StaticPool
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
 
 def init_engine():
-    """Probe PostgreSQL / Supabase database connection. If unreachable, gracefully fallback to SQLite."""
+    """Probe PostgreSQL / Supabase database connection. If unreachable, gracefully fallback to in-memory SQLite."""
     db_url = settings.sync_database_url
     is_supabase = "supabase" in db_url.lower() or bool(settings.SUPABASE_URL)
     
@@ -22,11 +23,12 @@ def init_engine():
             return eng
     except Exception as e:
         logger.warning(
-            f"Database connection probe failed ({e}). Falling back to SQLite for local development/testing."
+            f"Database connection probe failed ({e}). Falling back to in-memory SQLite for high reliability."
         )
         return create_engine(
-            "sqlite:///./echochain_dev.db",
+            "sqlite:///:memory:",
             connect_args={"check_same_thread": False},
+            poolclass=StaticPool,
             echo=settings.DEBUG,
         )
 
