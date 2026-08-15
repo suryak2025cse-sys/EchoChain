@@ -46,105 +46,174 @@ export const AppRoutes: React.FC = () => {
           }
         />
 
-        {/* Producer Routes */}
+        {/* Direct Product Routes */}
+        <Route
+          path="/products"
+          element={
+            <ProtectedRoute>
+              <ProductListPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/products/new"
+          element={
+            <ProtectedRoute>
+              <ProductCreatePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/products/create"
+          element={
+            <ProtectedRoute>
+              <ProductCreatePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/products/:id"
+          element={
+            <ProtectedRoute>
+              <ProductDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/products/:id/edit"
+          element={
+            <ProtectedRoute>
+              <ProductEditPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Direct Audio Capture & Acoustic DSP Routes */}
+        <Route
+          path="/audio/capture"
+          element={
+            <ProtectedRoute>
+              <AudioCapturePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/audio/upload"
+          element={
+            <ProtectedRoute>
+              <SoftwareAudioCapturePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/acoustic-analysis/:id"
+          element={
+            <ProtectedRoute>
+              <AcousticAnalysisPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Direct Provenance List Route */}
+        <Route
+          path="/provenance"
+          element={
+            <ProtectedRoute>
+              <ProvenanceListPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Producer Nested Routes */}
         <Route
           path="/producer"
           element={<Navigate to="/producer/dashboard" replace />}
         />
-
         <Route
           path="/producer/dashboard"
           element={
             <ProtectedRoute>
-              <RoleRoute allowedRoles={['PRODUCER']}>
+              <RoleRoute allowedRoles={['PRODUCER', 'ADMIN']}>
                 <ProducerDashboardPage />
               </RoleRoute>
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/producer/products"
           element={
             <ProtectedRoute>
-              <RoleRoute allowedRoles={['PRODUCER']}>
+              <RoleRoute allowedRoles={['PRODUCER', 'ADMIN']}>
                 <ProductListPage />
               </RoleRoute>
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/producer/products/new"
           element={
             <ProtectedRoute>
-              <RoleRoute allowedRoles={['PRODUCER']}>
+              <RoleRoute allowedRoles={['PRODUCER', 'ADMIN']}>
                 <ProductCreatePage />
               </RoleRoute>
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/producer/products/:id"
           element={
             <ProtectedRoute>
-              <RoleRoute allowedRoles={['PRODUCER']}>
+              <RoleRoute allowedRoles={['PRODUCER', 'ADMIN']}>
                 <ProductDetailPage />
               </RoleRoute>
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/producer/products/:id/edit"
           element={
             <ProtectedRoute>
-              <RoleRoute allowedRoles={['PRODUCER']}>
+              <RoleRoute allowedRoles={['PRODUCER', 'ADMIN']}>
                 <ProductEditPage />
               </RoleRoute>
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/producer/products/:id/audio"
           element={
             <ProtectedRoute>
-              <RoleRoute allowedRoles={['PRODUCER']}>
+              <RoleRoute allowedRoles={['PRODUCER', 'ADMIN']}>
                 <AudioCapturePage />
               </RoleRoute>
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/producer/audio-capture"
           element={
             <ProtectedRoute>
-              <RoleRoute allowedRoles={['PRODUCER']}>
+              <RoleRoute allowedRoles={['PRODUCER', 'ADMIN']}>
                 <SoftwareAudioCapturePage />
               </RoleRoute>
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/producer/acoustic-analysis/:captureId"
           element={
             <ProtectedRoute>
-              <RoleRoute allowedRoles={['PRODUCER']}>
+              <RoleRoute allowedRoles={['PRODUCER', 'ADMIN']}>
                 <AcousticAnalysisPage />
               </RoleRoute>
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/producer/provenance"
           element={
             <ProtectedRoute>
-              <RoleRoute allowedRoles={['PRODUCER']}>
+              <RoleRoute allowedRoles={['PRODUCER', 'ADMIN']}>
                 <ProvenanceListPage />
               </RoleRoute>
             </ProtectedRoute>
@@ -206,6 +275,9 @@ export const AppRoutes: React.FC = () => {
             </ProtectedRoute>
           }
         />
+
+        {/* Fallback Unknown Route Redirect */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </MainLayout>
   );
