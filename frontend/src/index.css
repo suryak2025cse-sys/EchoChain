@@ -2,33 +2,27 @@
 
 @layer base {
   :root {
-    --bg-light: #F7F9F7;
-    --bg-card-light: #FFFFFF;
-    --bg-dark: #091210;
-    --bg-dark-card: #111E1A;
-    --text-heading: #0F1715;
-    --text-body: #374151;
-    --text-muted: #6B7280;
-    --accent-emerald: #059669;
-    --accent-teal: #0D9488;
-    --accent-blue: #2563EB;
-    --accent-violet: #7C3AED;
-    --border-light: rgba(15, 23, 21, 0.08);
-    --border-dark: rgba(16, 185, 129, 0.15);
+    --bg-primary: #080A09;
+    --bg-secondary: #101311;
+    --text-primary: #F5F3ED;
+    --text-muted: #9A9A93;
+    --accent-gold: #D4AF37;
+    --accent-eco: #7CC8A0;
+    --accent-acoustic: #62C7C0;
+    --border-dark: #1D221F;
   }
 
   body {
-    background-color: var(--bg-light);
-    color: var(--text-body);
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     min-height: 100vh;
     overflow-x: hidden;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Manrope', 'Inter', system-ui, sans-serif;
-    color: var(--text-heading);
-    letter-spacing: -0.02em;
+  h1, h2, h3, h4 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    letter-spacing: -0.01em;
   }
 
   code, pre, .font-mono {
@@ -36,67 +30,72 @@
   }
 }
 
-/* Custom Refined Utilities */
-.light-editorial-section {
-  background-color: #F7F9F7;
-  color: #1F2937;
+.font-serif {
+  font-family: 'Cormorant Garamond', Georgia, serif;
 }
 
-.dark-tech-section {
-  background-color: #0A1210;
-  color: #E5E7EB;
+.font-sans {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-.light-card {
-  background: #FFFFFF;
-  border: 1px solid rgba(15, 23, 21, 0.07);
-  box-shadow: 0 4px 20px -4px rgba(15, 23, 21, 0.03);
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
 }
 
-.dark-card {
-  background: rgba(17, 30, 26, 0.85);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(16, 185, 129, 0.15);
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+/* Luxury Metallic Gold Button & Highlights */
+.bg-gold-metallic {
+  background: linear-gradient(135deg, #E6C665 0%, #D4AF37 50%, #B89028 100%);
+  color: #080A09;
 }
 
-.light-card-hover {
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+.bg-gold-metallic:hover {
+  background: linear-gradient(135deg, #F0D070 0%, #E0B840 50%, #C49B30 100%);
+  box-shadow: 0 4px 20px rgba(212, 175, 55, 0.25);
 }
 
-.light-card-hover:hover {
-  border-color: rgba(5, 150, 105, 0.3);
-  transform: translateY(-2px);
-  box-shadow: 0 12px 28px -6px rgba(5, 150, 105, 0.08);
+.border-gold-subtle {
+  border-color: rgba(212, 175, 55, 0.3);
 }
 
-.gradient-heading-emerald {
-  background: linear-gradient(135deg, #047857 0%, #0D9488 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.text-gold {
+  color: #D4AF37;
 }
 
-.gradient-heading-dark {
-  background: linear-gradient(135deg, #34D399 0%, #38BDF8 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
-/* Subtle Animated Radial Waveform for Hero Signature Visual */
-@keyframes pulse-subtle {
+::-webkit-scrollbar-track {
+  background: #080A09;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1D221F;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #D4AF37;
+}
+
+/* Keyframe Animations */
+@keyframes pulse-gold {
   0%, 100% { transform: scale(1); opacity: 0.8; }
-  50% { transform: scale(1.04); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 1; filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.4)); }
 }
 
-@keyframes spin-slow {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+@keyframes wave-flow {
+  0% { transform: translateX(0); }
+  50% { transform: translateX(-5%); }
+  100% { transform: translateX(0); }
 }
 
-.animate-pulse-subtle {
-  animation: pulse-subtle 4s ease-in-out infinite;
+.animate-pulse-gold {
+  animation: pulse-gold 3s ease-in-out infinite;
 }
 
-.animate-spin-slow {
-  animation: spin-slow 28s linear infinite;
+.animate-wave-flow {
+  animation: wave-flow 12s ease-in-out infinite;
 }

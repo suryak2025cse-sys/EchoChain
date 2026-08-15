@@ -1,148 +1,122 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { listProvenanceRecordsApi } from '../services/api';
 import type { ProvenanceRecord } from '../types';
+import { EcosystemWaveform } from '../components/ui/EcosystemWaveform';
+import { StatusBadge } from '../components/ui/StatusBadge';
+import { HashDisplay } from '../components/ui/HashDisplay';
+import { ArrowLeft, RefreshCw, ArrowRight } from 'lucide-react';
 
 export const ProvenanceListPage: React.FC = () => {
   const { token } = useAuth();
-  const [records, setRecords] = useState<ProvenanceRecord[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [items, setItems] = useState<ProvenanceRecord[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const loadList = async () => {
+    if (!token) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await listProvenanceRecordsApi(token);
+      setItems(res.items);
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch provenance directory.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchList = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await listProvenanceRecordsApi(token || '');
-        setRecords(data.items);
-      } catch (err: any) {
-        setError(err.message || 'Failed to load provenance records.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchList();
+    loadList();
   }, [token]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-6 font-sans">
-      <div className="max-w-6xl mx-auto space-y-6">
+    <div className="min-h-screen bg-[#080A09] text-[#F5F3ED] p-6 md:p-12 space-y-8 font-mono text-xs">
+      
+      <div className="flex items-center justify-between">
+        <Link to="/producer/dashboard" className="flex items-center gap-2 text-[#9A9A93] hover:text-[#D4AF37]">
+          <ArrowLeft className="w-4 h-4" /> Return to Dashboard
+        </Link>
+        <span className="text-[#D4AF37] bg-[#D4AF37]/10 px-3 py-1 rounded-xs border border-[#D4AF37]/30">
+          PROVENANCE CERTIFICATE DATABASE
+        </span>
+      </div>
 
-        {/* Top Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-slate-800 pb-4 gap-4">
-          <div>
-            <div className="flex items-center space-x-2 text-xs font-mono text-emerald-400 uppercase tracking-widest mb-1">
-              <span>● EchoChain Provenance Engine</span>
-            </div>
-            <h1 className="text-2xl font-bold font-mono tracking-tight text-white">
-              Provenance Records
-            </h1>
-            <p className="text-xs text-slate-400 mt-1">
-              Tamper-evident product provenance certificates combining ambient audio captures, AI acoustic fingerprints, and software liveness verification.
-            </p>
-          </div>
-          <Link
-            to="/producer/products"
-            className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-lg font-medium transition"
-          >
-            ← Back to Products Dashboard
-          </Link>
+      <div className="relative p-8 rounded-sm bg-[#101311] border border-[#1D221F] overflow-hidden">
+        <div className="absolute right-0 top-0 bottom-0 w-1/2 pointer-events-none opacity-25">
+          <EcosystemWaveform height={160} color="#D4AF37" speed={0.015} />
         </div>
 
-        {/* Status Alerts */}
-        {error && (
-          <div className="p-4 bg-rose-950/40 border border-rose-800/60 rounded-xl text-rose-300 text-sm">
-            ⚠️ {error}
-          </div>
-        )}
-
-        {/* Loading State */}
-        {loading ? (
-          <div className="flex items-center justify-center p-12 text-slate-400 font-mono text-sm space-x-3">
-            <svg className="animate-spin h-5 w-5 text-emerald-400" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-            </svg>
-            <span>Fetching Provenance Records from Supabase...</span>
-          </div>
-        ) : records.length === 0 ? (
-          <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-12 text-center space-y-4 max-w-lg mx-auto">
-            <div className="text-4xl">📜</div>
-            <h3 className="text-lg font-semibold text-slate-200">No Provenance Records Assembled Yet</h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Create a product batch and upload or record environmental audio signatures to assemble your first tamper-evident provenance record.
+        <div className="relative z-10 flex items-center justify-between">
+          <div className="space-y-2">
+            <h1 className="text-3xl md:text-4xl font-serif font-light text-[#F5F3ED]">
+              Provenance Certificates Database
+            </h1>
+            <p className="text-xs text-[#9A9A93]">
+              Immutable SHA-256 Commitments & Polygon State Transitions
             </p>
-            <Link
-              to="/producer/products"
-              className="inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg transition"
-            >
-              Go to Product Management
-            </Link>
           </div>
-        ) : (
-          <div className="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-sm">
-                <thead>
-                  <tr className="border-b border-slate-800 bg-slate-950/80 text-xs font-mono text-slate-400 uppercase tracking-wider">
-                    <th className="py-3 px-4">Provenance ID</th>
-                    <th className="py-3 px-4">Batch ID</th>
-                    <th className="py-3 px-4">Region Origin</th>
-                    <th className="py-3 px-4">Fingerprint Hash</th>
-                    <th className="py-3 px-4">Liveness & Risk</th>
-                    <th className="py-3 px-4">Lifecycle Status</th>
-                    <th className="py-3 px-4 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/60 font-mono text-xs">
-                  {records.map((rec) => (
-                    <tr key={rec.id} className="hover:bg-slate-800/40 transition">
-                      <td className="py-3.5 px-4 font-bold text-emerald-400">
-                        {rec.provenance_id}
-                      </td>
-                      <td className="py-3.5 px-4 text-slate-200">
-                        {rec.batch_id}
-                      </td>
-                      <td className="py-3.5 px-4 font-sans text-slate-300">
-                        {rec.region}, {rec.country}
-                      </td>
-                      <td className="py-3.5 px-4 text-slate-400 font-mono">
-                        {rec.fingerprint ? `${rec.fingerprint.slice(0, 10)}...` : 'N/A'}
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <div className="flex items-center space-x-2">
-                          <span className="text-slate-200 font-semibold">{rec.liveness_score}%</span>
-                          <span className={`px-2 py-0.5 rounded text-[10px] ${
-                            rec.replay_risk === 'LOW' ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-amber-950 text-amber-300 border border-amber-800'
-                          }`}>
-                            {rec.replay_risk}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                          {rec.status}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4 text-right">
-                        <Link
-                          to={`/provenance/${rec.provenance_id}`}
-                          className="inline-flex items-center px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-sans text-xs font-medium rounded transition"
-                        >
-                          View Certificate →
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
 
+          <button onClick={loadList} className="p-3 rounded-xs bg-[#080A09] border border-[#1D221F] text-[#F5F3ED] hover:border-[#D4AF37]">
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          </button>
+        </div>
       </div>
+
+      {error && (
+        <div className="p-4 rounded-xs bg-[#E36B6B]/10 border border-[#E36B6B]/40 text-[#E36B6B]">
+          {error}
+        </div>
+      )}
+
+      {loading ? (
+        <div className="p-16 text-center text-[#9A9A93]">Loading provenance database...</div>
+      ) : items.length === 0 ? (
+        <div className="p-16 text-center rounded-xs bg-[#101311] border border-[#1D221F] text-[#9A9A93]">
+          No provenance certificates recorded yet.
+        </div>
+      ) : (
+        <div className="rounded-sm bg-[#101311] border border-[#1D221F] overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead className="bg-[#080A09] text-[#9A9A93] border-b border-[#1D221F] uppercase tracking-wider font-semibold">
+                <tr>
+                  <th className="py-4 px-5">Provenance ID</th>
+                  <th className="py-4 px-5">Capture ID</th>
+                  <th className="py-4 px-5">Status</th>
+                  <th className="py-4 px-5">SHA-256 Digest</th>
+                  <th className="py-4 px-5 text-right">Inspect</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#1D221F] text-[#F5F3ED]">
+                {items.map(item => (
+                  <tr key={item.provenance_id} className="hover:bg-[#161B18]">
+                    <td className="py-4 px-5 font-bold text-[#D4AF37]">{item.provenance_id}</td>
+                    <td className="py-4 px-5 text-[#9A9A93]">{item.capture_id}</td>
+                    <td className="py-4 px-5">
+                      <StatusBadge status={item.status} size="sm" />
+                    </td>
+                    <td className="py-4 px-5">
+                      <HashDisplay hash={item.provenance_hash} truncate label="SHA" />
+                    </td>
+                    <td className="py-4 px-5 text-right">
+                      <Link
+                        to={`/provenance/${item.provenance_id}`}
+                        className="px-3 py-1.5 rounded-xs bg-[#080A09] border border-[#1D221F] text-[#F5F3ED] hover:border-[#D4AF37] inline-flex items-center gap-1"
+                      >
+                        <span>Lifecycle</span> <ArrowRight className="w-3 h-3" />
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

@@ -1,307 +1,188 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getPublicVerificationApi } from '../services/api';
 import type { PublicVerificationResponse } from '../types';
+import { VerificationBadge } from '../components/ui/VerificationBadge';
+import { HashDisplay } from '../components/ui/HashDisplay';
+import { AudioPlayer } from '../components/ui/AudioPlayer';
+import { SpectrogramCanvas } from '../components/ui/SpectrogramCanvas';
+import { StatusBadge } from '../components/ui/StatusBadge';
+import { 
+  MapPin, 
+  Calendar, 
+  Lock, 
+  AlertTriangle,
+  Radio,
+  FileCheck
+} from 'lucide-react';
 
 export const PublicProductVerificationPage: React.FC = () => {
-  const { productId } = useParams<{ productId: string }>();
+  const { code } = useParams<{ code: string }>();
+  const productCode = code || 'ECH-COFFEE-8821';
+
   const [data, setData] = useState<PublicVerificationResponse | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [copiedHash, setCopiedHash] = useState<boolean>(false);
-  const [copiedTx, setCopiedTx] = useState<boolean>(false);
-  const [copiedCid, setCopiedCid] = useState<boolean>(false);
 
   useEffect(() => {
-    const loadVerification = async () => {
-      if (!productId) return;
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await getPublicVerificationApi(productId);
-        setData(res);
-      } catch (err: any) {
-        setError(err.message || 'Product verification record not found.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadVerification();
-  }, [productId]);
+    setLoading(true);
+    setError(null);
+    getPublicVerificationApi(productCode)
+      .then((res: PublicVerificationResponse) => setData(res))
+      .catch((err: any) => setError(err.message || 'Product verification certificate not found.'))
+      .finally(() => setLoading(false));
+  }, [productCode]);
 
-  const copyText = (txt: string, type: 'hash' | 'tx' | 'cid') => {
-    navigator.clipboard.writeText(txt);
-    if (type === 'hash') {
-      setCopiedHash(true);
-      setTimeout(() => setCopiedHash(false), 2000);
-    } else if (type === 'tx') {
-      setCopiedTx(true);
-      setTimeout(() => setCopiedTx(false), 2000);
-    } else {
-      setCopiedCid(true);
-      setTimeout(() => setCopiedCid(false), 2000);
-    }
-  };
+  const p = data ? {
+    echochain_product_id: data.echochain_product_id,
+    product_name: data.product_name,
+    brand: data.brand,
+    region: data.region,
+    country: data.country,
+    harvest_date: data.harvest_date,
+    description: data.description
+  } : null;
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-6 font-sans">
-        <div className="flex items-center space-x-3 text-emerald-400 font-mono text-sm">
-          <svg className="animate-spin h-6 w-6" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-          </svg>
-          <span className="uppercase tracking-wider">Verifying Product Authenticity QR Code...</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (error || !data) {
-    return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 p-6 flex flex-col items-center justify-center font-sans">
-        <div className="bg-rose-950/40 border border-rose-800/60 rounded-xl p-8 max-w-md w-full text-center space-y-4">
-          <div className="text-rose-400 text-5xl">⚠️</div>
-          <h2 className="text-xl font-bold font-mono text-rose-200">Unverified Product QR Code</h2>
-          <p className="text-slate-400 text-xs leading-relaxed">{error || 'This product identifier could not be verified in the EchoChain registry.'}</p>
-          <Link
-            to="/"
-            className="inline-flex items-center justify-center px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-mono transition"
-          >
-            ← Return to EchoChain Home
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  const acoustic = data.acoustic_evidence;
-  const crypto = data.cryptographic_proof;
-  const chain = data.blockchain_proof;
-  const ipfs = data.ipfs_storage;
+  const prov = data?.cryptographic_proof;
+  const audio = data?.acoustic_evidence;
+  const acoustic = data?.acoustic_evidence;
+  const poly = data?.blockchain_proof;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 font-sans">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className="min-h-screen bg-[#080A09] text-[#F5F3ED] py-10 px-4 sm:px-6 md:px-12 selection:bg-[#D4AF37] selection:text-[#080A09] font-mono text-xs">
+      <div className="max-w-3xl mx-auto space-y-8">
 
-        {/* Top Header Badge */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="space-y-2 text-center md:text-left">
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
-              <span className="text-[10px] font-mono uppercase tracking-widest text-emerald-400 bg-emerald-950 border border-emerald-800 px-2.5 py-0.5 rounded">
-                ● Verified Consumer Packaging QR Code
-              </span>
-              <span className="text-[10px] font-mono uppercase tracking-widest text-purple-400 bg-purple-950 border border-purple-800 px-2.5 py-0.5 rounded">
-                Polygon Blockchain Anchored
-              </span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold font-mono text-white tracking-tight">
-              {data.product_name}
-            </h1>
-            <p className="text-xs text-slate-400 font-mono">
-              EchoChain Product ID: <span className="text-emerald-300 font-bold">{data.echochain_product_id}</span> | Batch: <span className="text-slate-200">{data.batch_id}</span>
-            </p>
-          </div>
-
-          {/* QR Code Image Display */}
-          {data.qr_code_b64 && (
-            <div className="bg-white p-3 rounded-xl shadow-lg border border-slate-700 flex flex-col items-center">
-              <img src={data.qr_code_b64} alt="Product QR Code" className="w-28 h-28 object-contain" />
-              <span className="text-[9px] font-mono text-slate-900 font-bold mt-1 tracking-tighter">
-                SCAN TO VERIFY
-              </span>
-            </div>
-          )}
+        {/* Brand Top Bar */}
+        <div className="flex items-center justify-between border-b border-[#1D221F] pb-4">
+          <Link to="/" className="text-[#D4AF37] font-bold text-sm tracking-widest uppercase">
+            ECHOCHAIN PROTOCOL
+          </Link>
+          <span className="text-[11px] text-[#7CC8A0] flex items-center gap-1.5 font-bold">
+            <span className="w-2 h-2 rounded-full bg-[#7CC8A0] animate-pulse" />
+            PUBLIC CONSUMER VERIFICATION LIVE
+          </span>
         </div>
 
-        {/* Overall Status Banner */}
-        <div className="bg-gradient-to-r from-emerald-950/80 via-slate-900 to-purple-950/80 border-2 border-emerald-500/50 rounded-xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-400 flex items-center justify-center text-emerald-400 text-xl font-bold">
-              ✓
-            </div>
-            <div>
-              <div className="text-xs font-mono text-emerald-300 font-bold uppercase tracking-wider">
-                AUTHENTICITY STATUS: {data.verification_status}
-              </div>
-              <p className="text-[11px] text-slate-300 mt-0.5">
-                All 7 cryptographic, acoustic, and blockchain proof layers verified.
-              </p>
-            </div>
+        {loading ? (
+          <div className="p-16 text-center text-[#9A9A93] bg-[#101311] border border-[#1D221F] rounded-sm">
+            Verifying cryptographic proofs & acoustic DSP signatures...
           </div>
-          <div className="text-[11px] font-mono text-slate-400">
-            Verified UTC: {new Date(data.verified_at).toLocaleString()}
+        ) : error || !data ? (
+          <div className="p-10 rounded-sm bg-[#101311] border border-[#E36B6B]/40 text-center space-y-4">
+            <AlertTriangle className="w-10 h-10 text-[#E36B6B] mx-auto" />
+            <h2 className="text-2xl font-serif text-[#F5F3ED]">Certificate Verification Failed</h2>
+            <p className="text-xs text-[#9A9A93] max-w-md mx-auto">{error || 'Unknown certificate ID'}</p>
           </div>
-        </div>
+        ) : (
+          <div className="space-y-8">
+            
+            {/* HERO VERIFICATION BADGE */}
+            <VerificationBadge status={data.verification_status} productId={p?.echochain_product_id || productCode} />
 
-        {/* LAYER 1 & 2: PRODUCT & REGION-LEVEL ORIGIN */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-          {/* Product & Terroir */}
-          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 space-y-3">
-            <h2 className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider border-b border-slate-800 pb-2 flex items-center gap-1.5">
-              <span>📦</span> Product & Terroir Specifications
-            </h2>
-            <div className="space-y-2 text-xs">
-              <div className="flex justify-between py-1 border-b border-slate-800/40">
-                <span className="text-slate-400">Brand / Estate:</span>
-                <span className="font-semibold text-slate-100">{data.brand}</span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-slate-800/40">
-                <span className="text-slate-400">Product Category:</span>
-                <span className="font-semibold text-slate-100">{data.product_type}</span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-slate-800/40">
-                <span className="text-slate-400">Region-Level Origin:</span>
-                <span className="font-bold text-emerald-400">{data.region}, {data.country}</span>
-              </div>
-              <div className="flex justify-between py-1">
-                <span className="text-slate-400">Harvest Period:</span>
-                <span className="font-mono text-slate-200">{data.harvest_date}</span>
+            {/* PRIVACY PROTECTION CALLOUT */}
+            <div className="p-4 rounded-xs bg-[#101311] border border-[#D4AF37]/30 flex items-start gap-3 text-xs">
+              <Lock className="w-4 h-4 text-[#D4AF37] shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <span className="text-[#D4AF37] font-bold uppercase tracking-wider">PROVENANCE PRIVACY GUARANTEE</span>
+                <p className="text-[#9A9A93] leading-relaxed">
+                  Exact harvest coordinates are protected to preserve estate privacy while proving regional terroir authenticity via ambient acoustic signatures.
+                </p>
               </div>
             </div>
-          </div>
 
-          {/* Environmental Acoustic Evidence */}
-          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 space-y-3">
-            <h2 className="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wider border-b border-slate-800 pb-2 flex items-center gap-1.5">
-              <span>🎙️</span> Environmental Acoustic Evidence
-            </h2>
-            {acoustic ? (
-              <div className="space-y-3 text-xs">
-                <div className="flex justify-between py-1 border-b border-slate-800/40">
-                  <span className="text-slate-400">Capture ID:</span>
-                  <span className="font-mono text-slate-200">{acoustic.capture_id}</span>
+            {/* PRODUCT TERROIR SPECS */}
+            {p && (
+              <div className="p-8 rounded-sm bg-[#101311] border border-[#1D221F] space-y-6">
+                <div className="flex items-center justify-between border-b border-[#1D221F] pb-4">
+                  <div>
+                    <span className="text-xs text-[#D4AF37] font-bold uppercase tracking-widest">{p.brand}</span>
+                    <h3 className="text-3xl font-serif text-[#F5F3ED] mt-1">{p.product_name}</h3>
+                  </div>
+                  <StatusBadge status={data.verification_status} size="lg" />
                 </div>
-                <div className="flex justify-between py-1 border-b border-slate-800/40">
-                  <span className="text-slate-400">Software Liveness Score:</span>
-                  <span className="font-mono font-bold text-emerald-400">{acoustic.liveness_score}% ({acoustic.replay_risk} REPLAY RISK)</span>
-                </div>
-                <div className="space-y-1">
-                  <span className="text-slate-400 block text-[11px]">Audio Playback:</span>
-                  <audio controls src={acoustic.audio_stream_url} className="w-full h-8 rounded" />
-                </div>
-              </div>
-            ) : (
-              <div className="text-xs font-mono text-slate-500">Audio capture pending verification.</div>
-            )}
-          </div>
 
-        </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 text-xs">
+                  <div>
+                    <div className="text-[#9A9A93] uppercase">ORIGIN REGION</div>
+                    <div className="text-[#F5F3ED] font-bold mt-1 flex items-center gap-1">
+                      <MapPin className="w-3.5 h-3.5 text-[#62C7C0]" /> {p.region}, {p.country}
+                    </div>
+                  </div>
 
-        {/* LAYER 3 & 4: CRYPTOGRAPHIC COMMITMENT & BLOCKCHAIN PROOF */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <div className="text-[#9A9A93] uppercase">HARVEST DATE</div>
+                    <div className="text-[#F5F3ED] font-bold mt-1 flex items-center gap-1">
+                      <Calendar className="w-3.5 h-3.5 text-[#D4AF37]" /> {p.harvest_date}
+                    </div>
+                  </div>
 
-          {/* Cryptographic SHA-256 Commitment */}
-          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 space-y-3">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-              <h2 className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
-                <span>🔐</span> Cryptographic Commitment
-              </h2>
-              {crypto?.provenance_hash && (
-                <button
-                  onClick={() => copyText(crypto.provenance_hash, 'hash')}
-                  className="text-[10px] font-mono bg-slate-800 text-slate-300 px-2 py-0.5 rounded"
-                >
-                  {copiedHash ? '✓ Copied' : 'Copy SHA-256'}
-                </button>
-              )}
-            </div>
-
-            {crypto ? (
-              <div className="space-y-2 text-xs font-mono">
-                <div className="text-slate-400">Canonical SHA-256 Hash:</div>
-                <div className="p-2.5 bg-slate-950 border border-slate-800 rounded text-[11px] text-emerald-400 break-all select-all font-semibold">
-                  {crypto.provenance_hash}
-                </div>
-                <div className="flex justify-between pt-1">
-                  <span className="text-slate-400">Sealed State:</span>
-                  <span className="text-emerald-400 font-bold">{crypto.is_sealed ? 'SEALED' : 'READY_FOR_SEAL'}</span>
-                </div>
-              </div>
-            ) : (
-              <div className="text-xs font-mono text-slate-500">Cryptographic hash commitment pending.</div>
-            )}
-          </div>
-
-          {/* Polygon Testnet Blockchain Proof */}
-          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 space-y-3">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-              <h2 className="text-xs font-mono font-bold text-purple-400 uppercase tracking-wider flex items-center gap-1.5">
-                <span>⛓️</span> Polygon Blockchain Proof
-              </h2>
-              {chain?.tx_hash && (
-                <button
-                  onClick={() => copyText(chain.tx_hash, 'tx')}
-                  className="text-[10px] font-mono bg-slate-800 text-slate-300 px-2 py-0.5 rounded"
-                >
-                  {copiedTx ? '✓ Copied' : 'Copy Tx'}
-                </button>
-              )}
-            </div>
-
-            {chain ? (
-              <div className="space-y-2 text-xs font-mono">
-                <div className="flex justify-between py-1 border-b border-slate-800/40">
-                  <span className="text-slate-400">Network:</span>
-                  <span className="text-purple-300 font-bold">{chain.network}</span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-slate-800/40">
-                  <span className="text-slate-400">Block Height:</span>
-                  <span className="text-emerald-400 font-bold">Block #{chain.block_number}</span>
-                </div>
-                <div className="space-y-1">
-                  <span className="text-slate-400 block text-[11px]">Transaction Hash:</span>
-                  <div className="p-2.5 bg-slate-950 border border-slate-800 rounded text-[11px] text-purple-300 break-all select-all font-semibold">
-                    {chain.tx_hash}
+                  <div>
+                    <div className="text-[#9A9A93] uppercase">FARM / ESTATE</div>
+                    <div className="text-[#F5F3ED] font-bold mt-1">Protected Estate</div>
                   </div>
                 </div>
               </div>
-            ) : (
-              <div className="text-xs font-mono text-slate-500">Blockchain anchoring pending.</div>
             )}
-          </div>
 
-        </div>
+            {/* ACOUSTIC EVIDENCE & SPECTROGRAM */}
+            {acoustic && (
+              <div className="space-y-4">
+                <h4 className="text-xl font-serif text-[#F5F3ED] flex items-center gap-2">
+                  <Radio className="w-5 h-5 text-[#62C7C0]" />
+                  <span>Ambient Field Acoustic Evidence</span>
+                </h4>
 
-        {/* IPFS STORAGE & PRIVACY BANNER */}
-        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-1.5">
-              <span>🌐</span> Decentralized IPFS Audio Storage
-            </h2>
-            {ipfs?.ipfs_cid && (
-              <button
-                onClick={() => copyText(ipfs.ipfs_cid, 'cid')}
-                className="text-[10px] font-mono bg-slate-800 text-slate-300 px-2 py-0.5 rounded"
-              >
-                {copiedCid ? '✓ Copied' : 'Copy CID'}
-              </button>
+                <SpectrogramCanvas featureVector={acoustic.feature_vector || acoustic} height={180} />
+
+                {audio?.audio_stream_url && (
+                  <AudioPlayer src={audio.audio_stream_url} title={`Harvest Soundscape Signature (${p?.echochain_product_id})`} />
+                )}
+              </div>
             )}
-          </div>
 
-          {ipfs ? (
-            <div className="p-3 bg-slate-950 border border-slate-800 rounded-lg flex flex-col sm:flex-row items-center justify-between text-xs font-mono gap-2">
-              <span className="text-cyan-300 select-all">ipfs://{ipfs.ipfs_cid}</span>
-              <a
-                href={ipfs.ipfs_gateway_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[11px] bg-slate-800 hover:bg-slate-700 text-cyan-300 px-3 py-1 rounded transition"
-              >
-                Open IPFS Gateway ↗
-              </a>
+            {/* CRYPTOGRAPHIC PROOF BREAKDOWN */}
+            <div className="p-8 rounded-sm bg-[#101311] border border-[#1D221F] space-y-6">
+              <h4 className="text-xl font-serif text-[#F5F3ED] flex items-center gap-2">
+                <FileCheck className="w-5 h-5 text-[#D4AF37]" />
+                <span>On-Chain Cryptographic Proof</span>
+              </h4>
+
+              <div className="space-y-4 text-xs">
+                {prov?.provenance_hash && (
+                  <div className="space-y-1">
+                    <div className="text-[#9A9A93] uppercase">CANONICAL SHA-256 PROVENANCE DIGEST:</div>
+                    <HashDisplay hash={prov.provenance_hash} />
+                  </div>
+                )}
+
+                {prov?.ipfs_cid && (
+                  <div className="space-y-1">
+                    <div className="text-[#9A9A93] uppercase">IPFS DECENTRALIZED EVIDENCE CID:</div>
+                    <HashDisplay hash={prov.ipfs_cid} label="CID" linkUrl={`https://gateway.pinata.cloud/ipfs/${prov.ipfs_cid}`} />
+                  </div>
+                )}
+
+                {poly?.tx_hash && (
+                  <div className="space-y-1">
+                    <div className="text-[#9A9A93] uppercase">POLYGON TESTNET SMART CONTRACT TX:</div>
+                    <HashDisplay hash={poly.tx_hash} label="TX" linkUrl={`https://amoy.polygonscan.com/tx/${poly.tx_hash}`} />
+                  </div>
+                )}
+              </div>
             </div>
-          ) : (
-            <div className="text-xs font-mono text-slate-500">Audio evidence stored in EchoChain Local Vault.</div>
-          )}
 
-          {/* Privacy Guarantee Banner */}
-          <div className="pt-2 border-t border-slate-800/60 text-[11px] font-mono text-slate-400 flex items-center gap-2">
-            <span>🛡️</span>
-            <span>Privacy Rule: Exact GPS coordinates are protected in isolated tier and omitted from public consumer certificates.</span>
+            {/* FOOTER CTA */}
+            <div className="pt-6 border-t border-[#1D221F] text-center space-y-3">
+              <p className="text-xs text-[#9A9A93]">
+                Secured by <span className="text-[#D4AF37] font-bold">EchoChain Protocol</span> • Powered by Polygon Testnet & Pinata IPFS
+              </p>
+              <Link to="/" className="text-xs text-[#62C7C0] hover:underline block font-bold">
+                Learn more about EchoChain Acoustic Intelligence →
+              </Link>
+            </div>
+
           </div>
-        </div>
+        )}
 
       </div>
     </div>

@@ -1,20 +1,19 @@
 import React, { useState } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Logo } from '../components/Logo';
-import { Lock, Mail, ArrowRight, AlertCircle } from 'lucide-react';
+import { EcosystemWaveform } from '../components/ui/EcosystemWaveform';
+import { GoldButton } from '../components/ui/GoldButton';
+import { Mail, Lock, AlertOctagon } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { login } = useAuth();
-
+  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
-  const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/profile';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,84 +22,98 @@ export const LoginPage: React.FC = () => {
 
     try {
       await login(email, password);
-      navigate(from, { replace: true });
+      navigate('/');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed. Please check credentials.');
+      setError(err instanceof Error ? err.message : 'Invalid credentials. Please verify email and password.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 py-12 bg-[#F7F9F7]">
-      <div className="max-w-md w-full p-8 rounded-3xl bg-white border border-gray-200 shadow-xl space-y-6">
-        <div className="text-center space-y-2">
-          <div className="flex justify-center mb-4">
-            <Logo variant="navbar" />
+    <div className="min-h-[85vh] relative flex items-center justify-center px-4 py-12 bg-[#080A09]">
+      
+      {/* Waveform Background */}
+      <div className="absolute inset-0 pointer-events-none opacity-20">
+        <EcosystemWaveform height={300} color="#D4AF37" speed={0.015} />
+      </div>
+
+      <div className="max-w-md w-full p-10 rounded-sm bg-[#101311] border border-[#1D221F] shadow-2xl space-y-8 relative z-10">
+        
+        <div className="text-center space-y-3">
+          <div className="flex justify-center mb-3">
+            <Logo variant="icon" />
           </div>
-          <h2 className="text-2xl font-extrabold text-gray-900">Sign in to EchoChain</h2>
-          <p className="text-xs text-gray-500 font-mono">Access acoustic provenance & role-based services</p>
+          <h2 className="text-3xl font-serif font-light text-[#F5F3ED]">Sign in to EchoChain</h2>
+          <p className="text-xs font-mono text-[#9A9A93]">
+            Access your agricultural provenance workspace
+          </p>
         </div>
 
         {error && (
-          <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+          <div className="p-4 rounded-xs bg-[#E36B6B]/10 border border-[#E36B6B]/40 text-[#E36B6B] text-xs font-mono flex items-center gap-3">
+            <AlertOctagon className="w-4 h-4 shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4 text-sm">
+        <form onSubmit={handleSubmit} className="space-y-5 text-xs font-mono">
           <div>
-            <label className="block text-xs font-mono font-semibold text-gray-700 mb-1">Email Address</label>
+            <label className="block text-[#9A9A93] font-semibold mb-2 uppercase tracking-wider">
+              Email Address
+            </label>
             <div className="relative">
-              <Mail className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
+              <Mail className="w-4 h-4 text-[#9A9A93] absolute left-3.5 top-3.5" />
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@organization.com"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none text-gray-900 text-xs"
+                placeholder="producer@estate.com"
+                className="w-full pl-11 pr-4 py-3 rounded-xs bg-[#080A09] border border-[#1D221F] text-[#F5F3ED] placeholder-[#9A9A93] focus:border-[#D4AF37] outline-none transition-colors"
               />
             </div>
           </div>
 
           <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="block text-xs font-mono font-semibold text-gray-700">Password</label>
-              <Link to="/forgot-password" className="text-xs text-emerald-700 hover:underline font-mono">
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-[#9A9A93] font-semibold uppercase tracking-wider">
+                Password
+              </label>
+              <Link to="/forgot-password" className="text-[#D4AF37] hover:underline text-[11px]">
                 Forgot password?
               </Link>
             </div>
             <div className="relative">
-              <Lock className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
+              <Lock className="w-4 h-4 text-[#9A9A93] absolute left-3.5 top-3.5" />
               <input
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none text-gray-900 text-xs"
+                className="w-full pl-11 pr-4 py-3 rounded-xs bg-[#080A09] border border-[#1D221F] text-[#F5F3ED] placeholder-[#9A9A93] focus:border-[#D4AF37] outline-none transition-colors"
               />
             </div>
           </div>
 
-          <button
+          <GoldButton
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-xl font-bold text-xs text-slate-950 bg-gradient-to-r from-amber-400 via-emerald-400 to-teal-300 hover:from-amber-300 hover:to-emerald-300 shadow-md transition-all flex items-center justify-center gap-2"
+            showArrow
+            className="w-full !py-3.5"
           >
             {loading ? 'Authenticating...' : 'Sign In'}
-            <ArrowRight className="w-4 h-4" />
-          </button>
+          </GoldButton>
         </form>
 
-        <div className="pt-4 border-t border-gray-100 text-center text-xs text-gray-500">
+        <div className="pt-6 border-t border-[#1D221F] text-center text-xs font-mono text-[#9A9A93]">
           Don't have an account?{' '}
-          <Link to="/register" className="font-semibold text-emerald-700 hover:underline">
-            Register here
+          <Link to="/register" className="font-bold text-[#D4AF37] hover:underline">
+            Register Producer
           </Link>
         </div>
+
       </div>
     </div>
   );

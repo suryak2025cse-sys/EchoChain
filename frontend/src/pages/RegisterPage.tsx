@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Logo } from '../components/Logo';
+import { EcosystemWaveform } from '../components/ui/EcosystemWaveform';
+import { GoldButton } from '../components/ui/GoldButton';
 import type { UserRole } from '../types';
-import { User, Mail, Lock, Building2, ArrowRight, AlertCircle, Shield } from 'lucide-react';
+import { Mail, Lock, User as UserIcon, Building, ShieldCheck, AlertOctagon, CheckCircle2 } from 'lucide-react';
 
 export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
@@ -14,77 +16,105 @@ export const RegisterPage: React.FC = () => {
   const [fullName, setFullName] = useState('');
   const [role, setRole] = useState<UserRole>('PRODUCER');
   const [organization, setOrganization] = useState('');
+
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setSuccess(null);
     setLoading(true);
 
     try {
-      await register(email, password, fullName, role, organization);
-      navigate('/profile');
+      await register(email, password, fullName, role, organization.trim() || undefined);
+      setSuccess('Registration successful! Proceeding to workspace...');
+      setTimeout(() => {
+        navigate('/');
+      }, 1500);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed.');
+      setError(err instanceof Error ? err.message : 'Registration failed. Email may already exist.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-[85vh] flex items-center justify-center px-4 py-12 bg-[#F7F9F7]">
-      <div className="max-w-lg w-full p-8 rounded-3xl bg-white border border-gray-200 shadow-xl space-y-6">
+    <div className="min-h-[90vh] relative flex items-center justify-center px-4 py-12 bg-[#080A09]">
+      
+      {/* Waveform Background */}
+      <div className="absolute inset-0 pointer-events-none opacity-20">
+        <EcosystemWaveform height={350} color="#D4AF37" speed={0.015} />
+      </div>
+
+      <div className="max-w-md w-full p-10 rounded-sm bg-[#101311] border border-[#1D221F] shadow-2xl space-y-8 relative z-10">
+        
         <div className="text-center space-y-2">
-          <div className="flex justify-center mb-4">
-            <Logo variant="navbar" />
+          <div className="flex justify-center mb-3">
+            <Logo variant="icon" />
           </div>
-          <h2 className="text-2xl font-extrabold text-gray-900">Create EchoChain Account</h2>
-          <p className="text-xs text-gray-500 font-mono">Join the privacy-preserving provenance network</p>
+          <h2 className="text-3xl font-serif font-light text-[#F5F3ED]">Create EchoChain Account</h2>
+          <p className="text-xs font-mono text-[#9A9A93]">
+            Register as a Producer, Certifier, or Auditor
+          </p>
         </div>
 
         {error && (
-          <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+          <div className="p-4 rounded-xs bg-[#E36B6B]/10 border border-[#E36B6B]/40 text-[#E36B6B] text-xs font-mono flex items-center gap-3">
+            <AlertOctagon className="w-4 h-4 shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4 text-sm">
+        {success && (
+          <div className="p-4 rounded-xs bg-[#7CC8A0]/10 border border-[#7CC8A0]/40 text-[#7CC8A0] text-xs font-mono flex items-center gap-3">
+            <CheckCircle2 className="w-4 h-4 shrink-0" />
+            <span>{success}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4 text-xs font-mono">
           <div>
-            <label className="block text-xs font-mono font-semibold text-gray-700 mb-1">Full Name</label>
+            <label className="block text-[#9A9A93] font-semibold mb-2 uppercase tracking-wider">
+              Full Name *
+            </label>
             <div className="relative">
-              <User className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
+              <UserIcon className="w-4 h-4 text-[#9A9A93] absolute left-3.5 top-3.5" />
               <input
                 type="text"
                 required
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                placeholder="Jane Doe"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none text-gray-900 text-xs"
+                placeholder="Sofia Chen"
+                className="w-full pl-11 pr-4 py-3 rounded-xs bg-[#080A09] border border-[#1D221F] text-[#F5F3ED] placeholder-[#9A9A93] focus:border-[#D4AF37] outline-none"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-mono font-semibold text-gray-700 mb-1">Email Address</label>
+            <label className="block text-[#9A9A93] font-semibold mb-2 uppercase tracking-wider">
+              Email Address *
+            </label>
             <div className="relative">
-              <Mail className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
+              <Mail className="w-4 h-4 text-[#9A9A93] absolute left-3.5 top-3.5" />
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@organization.com"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none text-gray-900 text-xs"
+                placeholder="producer@estate.com"
+                className="w-full pl-11 pr-4 py-3 rounded-xs bg-[#080A09] border border-[#1D221F] text-[#F5F3ED] placeholder-[#9A9A93] focus:border-[#D4AF37] outline-none"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-mono font-semibold text-gray-700 mb-1">Password (min 8 chars)</label>
+            <label className="block text-[#9A9A93] font-semibold mb-2 uppercase tracking-wider">
+              Password (min 8 chars) *
+            </label>
             <div className="relative">
-              <Lock className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
+              <Lock className="w-4 h-4 text-[#9A9A93] absolute left-3.5 top-3.5" />
               <input
                 type="password"
                 required
@@ -92,60 +122,63 @@ export const RegisterPage: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none text-gray-900 text-xs"
+                className="w-full pl-11 pr-4 py-3 rounded-xs bg-[#080A09] border border-[#1D221F] text-[#F5F3ED] placeholder-[#9A9A93] focus:border-[#D4AF37] outline-none"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-mono font-semibold text-gray-700 mb-1">Select Role</label>
-              <div className="relative">
-                <Shield className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
-                <select
-                  value={role}
-                  onChange={(e) => setRole(e.target.value as UserRole)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none text-gray-900 text-xs bg-white"
-                >
-                  <option value="PRODUCER">Producer / Harvester</option>
-                  <option value="CONSUMER">Consumer / Public</option>
-                  <option value="CERTIFIER">Certifier / Auditor</option>
-                  <option value="ADMIN">Administrator</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-mono font-semibold text-gray-700 mb-1">Organization (Optional)</label>
-              <div className="relative">
-                <Building2 className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
-                <input
-                  type="text"
-                  value={organization}
-                  onChange={(e) => setOrganization(e.target.value)}
-                  placeholder="Highlands Estate Co-op"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none text-gray-900 text-xs"
-                />
-              </div>
+          <div>
+            <label className="block text-[#9A9A93] font-semibold mb-2 uppercase tracking-wider">
+              Organization / Estate Name
+            </label>
+            <div className="relative">
+              <Building className="w-4 h-4 text-[#9A9A93] absolute left-3.5 top-3.5" />
+              <input
+                type="text"
+                value={organization}
+                onChange={(e) => setOrganization(e.target.value)}
+                placeholder="Highland Estate Co."
+                className="w-full pl-11 pr-4 py-3 rounded-xs bg-[#080A09] border border-[#1D221F] text-[#F5F3ED] placeholder-[#9A9A93] focus:border-[#D4AF37] outline-none"
+              />
             </div>
           </div>
 
-          <button
+          <div>
+            <label className="block text-[#9A9A93] font-semibold mb-2 uppercase tracking-wider">
+              Account Role *
+            </label>
+            <div className="relative">
+              <ShieldCheck className="w-4 h-4 text-[#9A9A93] absolute left-3.5 top-3.5 pointer-events-none" />
+              <select
+                value={role}
+                onChange={(e) => setRole(e.target.value as UserRole)}
+                className="w-full pl-11 pr-4 py-3 rounded-xs bg-[#080A09] border border-[#1D221F] text-[#F5F3ED] focus:border-[#D4AF37] outline-none"
+              >
+                <option value="PRODUCER">Producer / Harvester</option>
+                <option value="CONSUMER">Consumer / Public Observer</option>
+                <option value="CERTIFIER">Certifier / Auditor</option>
+                <option value="ADMIN">System Administrator</option>
+              </select>
+            </div>
+          </div>
+
+          <GoldButton
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-xl font-bold text-xs text-slate-950 bg-gradient-to-r from-amber-400 via-emerald-400 to-teal-300 hover:from-amber-300 hover:to-emerald-300 shadow-md transition-all flex items-center justify-center gap-2"
+            showArrow
+            className="w-full !py-3.5"
           >
             {loading ? 'Creating Account...' : 'Register Account'}
-            <ArrowRight className="w-4 h-4" />
-          </button>
+          </GoldButton>
         </form>
 
-        <div className="pt-4 border-t border-gray-100 text-center text-xs text-gray-500">
-          Already have an account?{' '}
-          <Link to="/login" className="font-semibold text-emerald-700 hover:underline">
-            Sign in here
+        <div className="pt-6 border-t border-[#1D221F] text-center text-xs font-mono text-[#9A9A93]">
+          Already registered?{' '}
+          <Link to="/login" className="font-bold text-[#D4AF37] hover:underline">
+            Sign In
           </Link>
         </div>
+
       </div>
     </div>
   );
