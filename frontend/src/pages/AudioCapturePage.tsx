@@ -124,7 +124,7 @@ export const AudioCapturePage: React.FC = () => {
   const handleDelete = async (recordingId: number) => {
     if (!token) return;
     try {
-      await deleteAudioApi(token, recordingId);
+      await deleteAudioApi(token, parseInt(targetId, 10), recordingId);
       await loadData();
     } catch (err: any) {
       setError(err.message || 'Delete failed.');

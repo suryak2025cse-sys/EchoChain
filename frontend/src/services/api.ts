@@ -337,12 +337,11 @@ export async function uploadAudioApi(
 ): Promise<AudioRecording> {
   const formData = new FormData();
   formData.append('file', file);
-  formData.append('product_id', productId.toString());
   if (locationLat !== undefined) formData.append('location_latitude', locationLat.toString());
   if (locationLng !== undefined) formData.append('location_longitude', locationLng.toString());
   if (deviceInfo) formData.append('device_info', deviceInfo);
 
-  const response = await apiFetch(`${API_BASE_URL}/api/v1/audio/upload`, {
+  const response = await apiFetch(`${API_BASE_URL}/api/v1/products/${productId}/audio/upload`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -365,12 +364,15 @@ export async function listAudioCapturesApi(
   limit = 20
 ): Promise<{ items: AudioCapture[]; total: number; page: number; limit: number; total_pages: number }> {
   const query = new URLSearchParams();
-  if (productId) query.append('product_id', productId.toString());
   if (verificationStatus) query.append('verification_status', verificationStatus);
   query.append('page', page.toString());
   query.append('limit', limit.toString());
 
-  const response = await apiFetch(`${API_BASE_URL}/api/v1/audio/captures?${query.toString()}`, {
+  const url = productId
+    ? `${API_BASE_URL}/api/v1/products/${productId}/audio`
+    : `${API_BASE_URL}/api/v1/audio/captures?${query.toString()}`;
+
+  const response = await apiFetch(url, {
     headers: {
       'Authorization': `Bearer ${token}`,
       'Accept': 'application/json',
@@ -379,13 +381,26 @@ export async function listAudioCapturesApi(
 
   const data = await safeParseJson(response);
   if (!response.ok) {
-    throw new Error(data.detail || 'Failed to fetch audio captures.');
+    throw new Error(data.detail || 'Failed to fetch audio recordings.');
   }
-  return data;
+  // /products/{id}/audio returns a plain array; wrap it to match expected shape
+  return Array.isArray(data) ? { items: data, total: data.length, page: 1, limit: data.length, total_pages: 1 } : data;
 }
 
 export const fetchAudioRecordingsApi = listAudioCapturesApi;
-export const deleteAudioApi = deleteProductApi;
+
+export async function deleteAudioApi(token: string, productId: number, recordingId: number): Promise<void> {
+  const response = await apiFetch(`${API_BASE_URL}/api/v1/products/${productId}/audio/${recordingId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  if (!response.ok) {
+    const data = await safeParseJson(response);
+    throw new Error(data.detail || 'Failed to delete audio recording.');
+  }
+}
 
 export async function analyzeAcousticFingerprintApi(token: string, captureId: number): Promise<AcousticFingerprint> {
   const response = await apiFetch(`${API_BASE_URL}/api/v1/acoustic/analyze/${captureId}`, {
