@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.database import get_db, engine, Base
+import app.models  # Guarantees all 12 SQLAlchemy ORM models register metadata tables before create_all
 from app.api.router import api_router
 from app.api.v1 import auth, products, audio, audio_capture, acoustic, liveness, provenance, ipfs, polygon, verify, certifier, security
 from app.schemas.health import HealthCheckResponse
@@ -13,7 +14,7 @@ from app.services.health_service import HealthService
 
 logger = logging.getLogger(__name__)
 
-# Create database tables (if any defined in models)
+# Create database tables automatically for all registered models
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
