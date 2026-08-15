@@ -282,7 +282,7 @@ export const AudioCapturePage: React.FC = () => {
                       </td>
                       <td className="py-4 px-5 text-right space-x-2">
                         <Link
-                          to={`/acoustic/analysis/REC-${rec.id}`}
+                          to={`/acoustic-analysis/${rec.id}`}
                           className="px-3 py-1.5 rounded-xs bg-[#62C7C0]/10 border border-[#62C7C0]/40 text-[#62C7C0] hover:bg-[#62C7C0]/20"
                         >
                           View Spectrogram
