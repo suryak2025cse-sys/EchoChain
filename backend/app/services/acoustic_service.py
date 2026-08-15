@@ -39,11 +39,12 @@ class AcousticService:
             from app.repositories.audio_repository import audio_repository
             rec = audio_repository.get(db, num_id)
             if rec:
+                user_id = current_user.id if current_user else (rec.product.producer_id if rec.product else 1)
                 return audio_capture_repository.create(
                     db,
                     obj_in_data={
                         "capture_id": str(rec.id),
-                        "user_id": current_user.id,
+                        "user_id": user_id,
                         "product_id": rec.product_id,
                         "file_name": rec.file_name,
                         "file_path": rec.file_path,
