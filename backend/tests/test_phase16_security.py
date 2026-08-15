@@ -19,11 +19,16 @@ def create_test_wav_bytes() -> bytes:
 
 
 def test_phase16_security_detection_and_monitoring_pipeline():
+    import uuid
+    uid = uuid.uuid4().hex[:6]
+    prod_email = f"sec_prod_{uid}@echochain.org"
+    admin_email = f"sec_admin_{uid}@echochain.org"
+
     # 1. Register Producer User
     prod_reg = client.post(
         "/api/v1/auth/register",
         json={
-            "email": "sec_producer@echochain.org",
+            "email": prod_email,
             "password": "Password123!",
             "full_name": "Security Test Producer",
             "role": "PRODUCER",
@@ -38,7 +43,7 @@ def test_phase16_security_detection_and_monitoring_pipeline():
     admin_reg = client.post(
         "/api/v1/auth/register",
         json={
-            "email": "sec_admin@echochain.org",
+            "email": admin_email,
             "password": "Password123!",
             "full_name": "Security Administrator",
             "role": "ADMIN",

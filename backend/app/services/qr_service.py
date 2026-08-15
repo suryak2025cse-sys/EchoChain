@@ -5,8 +5,15 @@ from qrcode.image.svg import SvgImage
 from typing import Dict, Any
 
 
+from app.core.config import settings
+
+
 class QRService:
-    DEFAULT_FRONTEND_BASE_URL = "http://localhost:5173"
+    @classmethod
+    def get_frontend_base_url(cls) -> str:
+        return (settings.FRONTEND_URL or "http://localhost:5173").rstrip("/")
+
+    DEFAULT_FRONTEND_BASE_URL = property(lambda self: self.get_frontend_base_url())
 
     @classmethod
     def generate_product_id(cls, product_type: str, count: int) -> str:

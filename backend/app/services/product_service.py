@@ -39,7 +39,8 @@ class ProductService:
             echochain_product_id = QRService.generate_product_id(req.product_type, count)
             
             # QR Code points to public consumer verification URL
-            verification_url = f"{QRService.DEFAULT_FRONTEND_BASE_URL}/verify/{echochain_product_id}"
+            base_frontend_url = QRService.get_frontend_base_url()
+            verification_url = f"{base_frontend_url}/verify/{echochain_product_id}"
             qr_b64 = QRService.generate_qr_b64(verification_url)
 
             new_product = product_repository.create(

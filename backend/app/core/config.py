@@ -21,6 +21,9 @@ class Settings(BaseSettings):
         "*"
     ]
 
+    # Frontend Public Base URL
+    FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:5173")
+
     # JWT Authentication & Security
     SECRET_KEY: str = os.getenv("SECRET_KEY", "echochain_super_secret_jwt_key_2026_change_in_production")
     ALGORITHM: str = "HS256"

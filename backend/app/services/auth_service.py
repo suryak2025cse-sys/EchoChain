@@ -33,12 +33,20 @@ class AuthService:
                 detail="User with this email already exists."
             )
 
+        # Prevent privilege escalation: restrict public self-registration roles in production
+        requested_role = req.role.value if hasattr(req.role, 'value') else str(req.role)
+        if settings.ENVIRONMENT == "production" and requested_role in ["ADMIN", "CERTIFIER"]:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Self-registration for role '{requested_role}' is restricted. Only PRODUCER or CONSUMER roles are permitted."
+            )
+
         # Retrieve Role
-        role = user_repository.get_role_by_name(db, req.role.value)
+        role = user_repository.get_role_by_name(db, requested_role)
         if not role:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Role '{req.role.value}' does not exist."
+                detail=f"Role '{requested_role}' does not exist."
             )
 
         # Hash password and store

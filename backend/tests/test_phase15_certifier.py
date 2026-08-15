@@ -19,11 +19,16 @@ def create_test_wav_bytes() -> bytes:
 
 
 def test_phase15_certifier_review_and_immutable_audit_logging():
+    import uuid
+    uid = uuid.uuid4().hex[:6]
+    prod_email = f"p15_prod_{uid}@echochain.org"
+    cert_email = f"p15_cert_{uid}@echochain.org"
+
     # 1. Register Producer User
     prod_reg = client.post(
         "/api/v1/auth/register",
         json={
-            "email": "p15_producer@echochain.org",
+            "email": prod_email,
             "password": "Password123!",
             "full_name": "Phase 15 Producer",
             "role": "PRODUCER",
@@ -38,7 +43,7 @@ def test_phase15_certifier_review_and_immutable_audit_logging():
     cert_reg = client.post(
         "/api/v1/auth/register",
         json={
-            "email": "p15_certifier@echochain.org",
+            "email": cert_email,
             "password": "Password123!",
             "full_name": "Phase 15 Certifier",
             "role": "CERTIFIER",
