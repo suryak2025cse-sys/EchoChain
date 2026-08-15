@@ -68,7 +68,15 @@ export const AudioCapturePage: React.FC = () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       audioChunksRef.current = [];
-      const recorder = new MediaRecorder(stream);
+      const supportedMime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
+        : MediaRecorder.isTypeSupported('audio/webm')
+        ? 'audio/webm'
+        : MediaRecorder.isTypeSupported('audio/mp4')
+        ? 'audio/mp4'
+        : '';
+
+      const recorder = supportedMime ? new MediaRecorder(stream, { mimeType: supportedMime }) : new MediaRecorder(stream);
       mediaRecorderRef.current = recorder;
 
       recorder.ondataavailable = (e) => {
@@ -78,7 +86,8 @@ export const AudioCapturePage: React.FC = () => {
       };
 
       recorder.onstop = () => {
-        const blob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+        const actualMime = recorder.mimeType || 'audio/webm';
+        const blob = new Blob(audioChunksRef.current, { type: actualMime });
         setAudioBlob(blob);
         setAudioUrl(URL.createObjectURL(blob));
         stream.getTracks().forEach((t) => t.stop());
@@ -109,7 +118,8 @@ export const AudioCapturePage: React.FC = () => {
     setUploading(true);
     setError(null);
     try {
-      const file = new File([audioBlob], `capture_${Date.now()}.wav`, { type: 'audio/wav' });
+      const ext = audioBlob.type.includes('webm') ? '.webm' : audioBlob.type.includes('mp4') ? '.m4a' : '.wav';
+      const file = new File([audioBlob], `capture_${Date.now()}${ext}`, { type: audioBlob.type || 'audio/wav' });
       await uploadAudioApi(token, parseInt(targetId, 10), file);
       setAudioBlob(null);
       setAudioUrl(null);
