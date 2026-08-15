@@ -20,6 +20,6 @@ class User(BaseModel):
     reset_token_expires_at = Column(DateTime, nullable=True)
 
     # Relationships
-    role = relationship("Role", back_populates="users")
+    role = relationship("Role", back_populates="users", lazy="joined")
     refresh_tokens = relationship("RefreshToken", back_populates="user", cascade="all, delete-orphan")
     audit_logs = relationship("AuditLog", back_populates="user", cascade="all, delete-orphan")

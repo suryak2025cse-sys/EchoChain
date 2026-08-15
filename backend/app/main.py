@@ -5,7 +5,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from app.core.config import settings
-from app.core.database import get_db, engine, Base
+from app.core.database import get_db, engine, Base, SessionLocal
+from app.repositories.user_repository import user_repository
 import app.models  # Guarantees all 12 SQLAlchemy ORM models register metadata tables before create_all
 from app.api.router import api_router
 from app.api.v1 import auth, products, audio, audio_capture, acoustic, liveness, provenance, ipfs, polygon, verify, certifier, security
@@ -17,6 +18,13 @@ logger = logging.getLogger(__name__)
 # Create database tables automatically for all registered models
 Base.metadata.create_all(bind=engine)
 
+# Seed default database roles automatically on startup
+try:
+    with SessionLocal() as db_session:
+        user_repository.seed_roles_if_empty(db_session)
+except Exception as err:
+    logger.warning(f"Database role seeding notice: {err}")
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
@@ -25,7 +33,7 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# Configure CORS cleanly for production & cross-origin Vercel requests
+# 1. Standard FastAPI CORS Middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -35,14 +43,37 @@ app.add_middleware(
 )
 
 
-@app.exception_handler(Exception)
-async def global_exception_handler(request: Request, exc: Exception):
-    logger.error(f"Global unhandled exception: {exc}\n{traceback.format_exc()}")
-    return JSONResponse(
-        status_code=500,
-        content={"detail": f"Server Error: {str(exc)}"},
-        headers={"Access-Control-Allow-Origin": "*"}
-    )
+# 2. Universal Custom CORS & Preflight OPTIONS Middleware
+@app.middleware("http")
+async def universal_cors_middleware(request: Request, call_next):
+    origin = request.headers.get("origin", "*")
+    
+    # Preflight OPTIONS handler guarantees HTTP 200 with full CORS headers
+    if request.method == "OPTIONS":
+        response = JSONResponse(content={"status": "ok"})
+        response.headers["Access-Control-Allow-Origin"] = origin
+        if origin != "*":
+            response.headers["Access-Control-Allow-Credentials"] = "true"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
+        response.headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type, Accept, Origin, X-Requested-With, x-client-info, apikey"
+        response.headers["Access-Control-Max-Age"] = "86400"
+        return response
+
+    try:
+        response = await call_next(request)
+    except Exception as exc:
+        logger.error(f"Unhandled exception in request: {exc}\n{traceback.format_exc()}")
+        response = JSONResponse(
+            status_code=500,
+            content={"detail": f"Server Error: {str(exc)}"}
+        )
+
+    response.headers["Access-Control-Allow-Origin"] = origin
+    if origin != "*":
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
+    response.headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type, Accept, Origin, X-Requested-With, x-client-info, apikey"
+    return response
 
 
 # Include API Router under /api/v1
