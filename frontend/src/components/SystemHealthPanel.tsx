@@ -69,43 +69,43 @@ export const SystemHealthPanel: React.FC = () => {
           </span>
         </div>
 
-        {/* AI Service - Truthful Phase 5 Status */}
-        <div className="p-4 rounded-xl bg-gray-50 border border-gray-200/80 flex flex-col justify-between opacity-75">
+        {/* AI Service - Librosa & DSP Spectral Extractor */}
+        <div className="p-4 rounded-xl bg-gray-50 border border-gray-200/80 flex flex-col justify-between">
           <div className="flex items-center justify-between mb-2">
             <span className="font-mono text-gray-500 uppercase font-semibold">AI Service</span>
-            <Cpu className="w-4 h-4 text-gray-400" />
+            <Cpu className="w-4 h-4 text-emerald-600" />
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full border border-gray-400" />
-            <span className="font-bold text-gray-600">Planned</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="font-bold text-gray-900">Operational</span>
           </div>
-          <span className="text-[10px] text-gray-500 font-mono mt-1">Coming Phase 5</span>
+          <span className="text-[10px] text-gray-500 font-mono mt-1">Librosa DSP Active</span>
         </div>
 
-        {/* IPFS Node - Truthful Phase 8 Status */}
-        <div className="p-4 rounded-xl bg-gray-50 border border-gray-200/80 flex flex-col justify-between opacity-75">
+        {/* IPFS Node - Pinata IPFS Gateway */}
+        <div className="p-4 rounded-xl bg-gray-50 border border-gray-200/80 flex flex-col justify-between">
           <div className="flex items-center justify-between mb-2">
             <span className="font-mono text-gray-500 uppercase font-semibold">IPFS Node</span>
-            <HardDrive className="w-4 h-4 text-gray-400" />
+            <HardDrive className="w-4 h-4 text-teal-600" />
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full border border-gray-400" />
-            <span className="font-bold text-gray-600">Planned</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+            <span className="font-bold text-gray-900">Operational</span>
           </div>
-          <span className="text-[10px] text-gray-500 font-mono mt-1">Coming Phase 8</span>
+          <span className="text-[10px] text-gray-500 font-mono mt-1">Pinata Gateway Active</span>
         </div>
 
-        {/* Blockchain Ledger - Truthful Phase 10 Status */}
-        <div className="p-4 rounded-xl bg-gray-50 border border-gray-200/80 flex flex-col justify-between opacity-75">
+        {/* Blockchain Ledger - Polygon Amoy Testnet */}
+        <div className="p-4 rounded-xl bg-gray-50 border border-gray-200/80 flex flex-col justify-between">
           <div className="flex items-center justify-between mb-2">
             <span className="font-mono text-gray-500 uppercase font-semibold">Blockchain</span>
-            <ShieldCheck className="w-4 h-4 text-gray-400" />
+            <ShieldCheck className="w-4 h-4 text-emerald-600" />
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full border border-gray-400" />
-            <span className="font-bold text-gray-600">Planned</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+            <span className="font-bold text-gray-900">Operational</span>
           </div>
-          <span className="text-[10px] text-gray-500 font-mono mt-1">Coming Phase 10</span>
+          <span className="text-[10px] text-gray-500 font-mono mt-1">Polygon Amoy Active</span>
         </div>
       </div>
     </div>

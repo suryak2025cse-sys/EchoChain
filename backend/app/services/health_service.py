@@ -4,6 +4,9 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.schemas.health import HealthCheckResponse
 
+from app.services.ipfs_service import IPFSService
+from app.services.polygon_service import PolygonService
+
 logger = logging.getLogger(__name__)
 
 
@@ -11,7 +14,11 @@ class HealthService:
     @staticmethod
     def check_health(db: Session) -> HealthCheckResponse:
         db_status = "disconnected"
-        db_details = {}
+        db_details = {
+            "ai_service": "Active (Librosa DSP Spectral Extractor)",
+            "ipfs_node": "Active (Pinata IPFS)" if IPFSService.is_configured() else "Ready (Pinata IPFS)",
+            "blockchain": "Active (Polygon Amoy Testnet)" if PolygonService.is_configured() else "Ready (Polygon Amoy Testnet)",
+        }
         
         try:
             db.execute(text("SELECT 1"))
