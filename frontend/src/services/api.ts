@@ -4,10 +4,9 @@ const rawApiUrl = (import.meta.env.VITE_API_URL || '').trim().replace(/\/+$/, ''
 const API_BASE_URL = rawApiUrl.endsWith('/api') ? rawApiUrl.slice(0, -4) : rawApiUrl;
 
 /**
- * Custom fetch wrapper with diagnostic error handling.
- * Catches native browser "Failed to fetch" network errors and transforms them into clear actionable feedback.
+ * Custom fetch wrapper with automatic 1-retry for Render cold starts and diagnostic error handling.
  */
-async function apiFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+async function apiFetch(input: RequestInfo | URL, init?: RequestInit, isRetry = false): Promise<Response> {
   const urlStr = typeof input === 'string' ? input : input.toString();
   const method = init?.method || 'GET';
   
@@ -22,6 +21,14 @@ async function apiFetch(input: RequestInfo | URL, init?: RequestInit): Promise<R
     });
 
     const isNetworkError = error instanceof TypeError || (error?.message && error.message.toLowerCase().includes('failed to fetch'));
+    
+    // Auto retry once if Render was sleeping on cold start
+    if (isNetworkError && !isRetry) {
+      console.info(`[EchoChain API] Retrying request in 2s for Render cold-start wakeup: ${urlStr}`);
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      return apiFetch(input, init, true);
+    }
+
     if (isNetworkError) {
       throw new Error(
         `API CONNECTION ERROR (${method} ${urlStr}): Unable to connect to the EchoChain backend API (${API_BASE_URL || 'relative'}). Possible causes: Backend server is offline, incorrect VITE_API_URL, or CORS network restriction.`
