@@ -1,6 +1,7 @@
 import type { HealthResponse, TokenResponse, User, Product, ProducerStats, PaginatedProducts, AudioRecording, AudioCapture, AcousticFingerprint, LivenessChallenge, LivenessResult, ProvenanceRecord, ProvenanceListResponse, ProvenanceSealResponse, ProvenanceVerificationResponse, IPFSUploadResponse, IPFSResponse, PolygonAnchorResponse, PolygonVerificationResponse, PublicVerificationResponse, CertifierReviewDetail, CertifierDecisionResponse, AuditLogListResponse, SecurityEvent, SecurityEventListResponse, SecurityMetricsSummary, SecurityScanResult } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+const rawApiUrl = (import.meta.env.VITE_API_URL || '').trim().replace(/\/+$/, '');
+const API_BASE_URL = rawApiUrl.endsWith('/api') ? rawApiUrl.slice(0, -4) : rawApiUrl;
 
 /**
  * Safely parses response JSON body without throwing "Unexpected end of JSON input".
