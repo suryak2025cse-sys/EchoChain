@@ -15,14 +15,31 @@ from app.schemas.acoustic import AcousticFingerprintResponse, AcousticFingerprin
 
 class AcousticService:
     @staticmethod
-    def analyze_capture(db: Session, capture_id: str, current_user: User) -> AcousticFingerprintResponse:
-        # 1. Retrieve audio capture (fallback to AudioRecording if numeric ID)
+    def _find_audio_capture(db: Session, capture_id: str, current_user: User) -> Optional[AudioCapture]:
+        clean_id = str(capture_id).replace("REC-", "").replace("#", "").strip()
+        
+        # 1. Search by exact capture_id string
         capture = audio_capture_repository.get_by_capture_id(db, capture_id)
-        if not capture and capture_id.isdigit():
+        if capture:
+            return capture
+            
+        # 2. Search by clean_id string
+        capture = audio_capture_repository.get_by_capture_id(db, clean_id)
+        if capture:
+            return capture
+
+        if clean_id.isdigit():
+            num_id = int(clean_id)
+            # 3. Search AudioCapture by primary key integer id
+            capture = audio_capture_repository.get(db, num_id)
+            if capture:
+                return capture
+
+            # 4. Search AudioRecording by primary key integer id & auto-create AudioCapture
             from app.repositories.audio_repository import audio_repository
-            rec = audio_repository.get(db, int(capture_id))
+            rec = audio_repository.get(db, num_id)
             if rec:
-                capture = audio_capture_repository.create(
+                return audio_capture_repository.create(
                     db,
                     obj_in_data={
                         "capture_id": str(rec.id),
@@ -40,6 +57,12 @@ class AcousticService:
                     }
                 )
 
+        return None
+
+    @staticmethod
+    def analyze_capture(db: Session, capture_id: str, current_user: User) -> AcousticFingerprintResponse:
+        # 1. Retrieve audio capture with flexible lookup
+        capture = AcousticService._find_audio_capture(db, capture_id, current_user)
         if not capture:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Audio capture '{capture_id}' not found.")
 
@@ -55,8 +78,12 @@ class AcousticService:
         # 5. Render Plots
         waveform_b64, melspec_b64, mfcc_b64 = AcousticDSPPipeline.render_plots_b64(result["raw"])
 
-        # 6. Save or update AcousticFingerprint DB record
-        existing = acoustic_repository.get_by_capture_id(db, capture_id)
+        # 6. Save or update AcousticFingerprint DB record (using capture.capture_id)
+        target_cap_id = capture.capture_id
+        existing = acoustic_repository.get_by_capture_id(db, target_cap_id)
+        if not existing and capture_id != target_cap_id:
+            existing = acoustic_repository.get_by_capture_id(db, capture_id)
+
         if existing:
             existing.fingerprint = result["fingerprint"]
             existing.fingerprint_hex_vector = result["fingerprint_hex_vector"]
@@ -71,7 +98,7 @@ class AcousticService:
             fp_record = acoustic_repository.create(
                 db,
                 obj_in_data={
-                    "capture_id": capture_id,
+                    "capture_id": target_cap_id,
                     "fingerprint": result["fingerprint"],
                     "fingerprint_hex_vector": result["fingerprint_hex_vector"],
                     "feature_vector": result["feature_summary"],
@@ -87,14 +114,24 @@ class AcousticService:
             db,
             action="ACOUSTIC_ANALYSIS_COMPLETED",
             user_id=current_user.id,
-            details=f"Extracted acoustic fingerprint for capture {capture_id} (Fingerprint Hash: {result['fingerprint'][:12]}...)"
+            details=f"Extracted acoustic fingerprint for capture {target_cap_id} (Fingerprint Hash: {result['fingerprint'][:12]}...)"
         )
 
         return AcousticFingerprintResponse.model_validate(fp_record)
 
     @staticmethod
     def get_fingerprint(db: Session, capture_id: str, current_user: User) -> AcousticFingerprintResponse:
+        clean_id = str(capture_id).replace("REC-", "").replace("#", "").strip()
         fp_record = acoustic_repository.get_by_capture_id(db, capture_id)
+        if not fp_record:
+            fp_record = acoustic_repository.get_by_capture_id(db, clean_id)
+
+        if not fp_record and clean_id.isdigit():
+            # Check via _find_audio_capture to match capture_id stored on DB record
+            capture = AcousticService._find_audio_capture(db, capture_id, current_user)
+            if capture:
+                fp_record = acoustic_repository.get_by_capture_id(db, capture.capture_id)
+
         if not fp_record:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
