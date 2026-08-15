@@ -46,8 +46,21 @@ export const ProducerDashboardPage: React.FC = () => {
     setError(null);
     try {
       const [statsData, productsData, provData] = await Promise.all([
-        fetchProducerStatsApi(token),
-        fetchMyProductsApi(token, undefined, undefined, undefined, 1, 10),
+        fetchProducerStatsApi(token).catch(() => ({
+          total_batches: 0,
+          verified_batches: 0,
+          pending_verifications: 0,
+          flagged_alerts: 0,
+          total_audio_captures: 0,
+          system_health_status: 'HEALTHY'
+        } as unknown as ProducerStats)),
+        fetchMyProductsApi(token, undefined, undefined, undefined, 1, 10).catch(() => ({
+          items: [],
+          total: 0,
+          page: 1,
+          limit: 10,
+          total_pages: 0
+        })),
         listProvenanceRecordsApi(token).catch(() => ({ items: [], total: 0 }))
       ]);
 

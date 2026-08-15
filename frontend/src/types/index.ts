@@ -28,6 +28,8 @@ export interface TokenResponse {
   };
 }
 
+export type UserProfileResponse = TokenResponse['user'];
+
 export interface HealthResponse {
   status: 'ok' | 'degraded' | 'error';
   app_name: string;

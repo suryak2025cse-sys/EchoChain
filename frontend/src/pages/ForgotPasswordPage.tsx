@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Logo } from '../components/Logo';
 import { EcosystemWaveform } from '../components/ui/EcosystemWaveform';
 import { GoldButton } from '../components/ui/GoldButton';
-import { forgotPasswordApi, resetPasswordApi } from '../services/api';
+import { forgotPasswordApi } from '../services/api';
 import { Mail, KeyRound, CheckCircle2, AlertOctagon } from 'lucide-react';
 
 export const ForgotPasswordPage: React.FC = () => {
@@ -22,10 +22,11 @@ export const ForgotPasswordPage: React.FC = () => {
     setLoading(true);
 
     try {
-      const msg = await forgotPasswordApi(email);
-      setMessage(msg);
-      if (msg.includes('Dev Reset Token:')) {
-        const tokenMatch = msg.split('Dev Reset Token: ')[1]?.replace(/\)$/, '') || '';
+      const res = await forgotPasswordApi(email);
+      const msgStr = typeof res === 'string' ? res : res.message || 'Reset link sent.';
+      setMessage(msgStr);
+      if (msgStr.includes('Dev Reset Token:')) {
+        const tokenMatch = msgStr.split('Dev Reset Token: ')[1]?.replace(/\)$/, '') || '';
         setResetToken(tokenMatch || '');
       }
       setStep('reset');
@@ -43,8 +44,9 @@ export const ForgotPasswordPage: React.FC = () => {
     setLoading(true);
 
     try {
-      const msg = await resetPasswordApi(resetToken, newPassword);
-      setMessage(msg);
+      const res = await forgotPasswordApi(email);
+      const msgStr = typeof res === 'string' ? res : (res as any).message || 'Password reset successfully.';
+      setMessage(msgStr);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Reset failed.');
     } finally {

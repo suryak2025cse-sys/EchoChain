@@ -27,17 +27,18 @@ export const ProductCreatePage: React.FC = () => {
     setError(null);
 
     try {
+      const formattedDate = harvestDate ? harvestDate.split('T')[0] : new Date().toISOString().split('T')[0];
       const created = await createProductApi(token, {
         product_name: productName,
         product_type: 'AGRICULTURAL_BATCH',
         brand: brand || 'EchoChain Terroir Estate',
         country,
         region,
-        harvest_date: harvestDate,
+        harvest_date: formattedDate,
         description: description || undefined
       });
 
-      navigate(`/products/${created.id}`);
+      navigate(`/audio/capture?product_id=${created.id}`);
     } catch (err: any) {
       setError(err.message || 'Failed to create product batch.');
     } finally {

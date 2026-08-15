@@ -54,7 +54,7 @@ export const AudioCapturePage: React.FC = () => {
         fetchAudioRecordingsApi(token, prodId).catch(() => [])
       ]);
       setProduct(prodData);
-      setRecordings(audioData);
+      setRecordings((audioData as any).items || (Array.isArray(audioData) ? audioData : []));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load audio capture page.');
     }

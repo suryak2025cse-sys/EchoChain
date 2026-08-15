@@ -25,13 +25,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [refreshTokenStr, setRefreshTokenStr] = useState<string | null>(localStorage.getItem(REFRESH_KEY));
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  const mapApiUser = (u: any): User => ({
+    id: u.id,
+    email: u.email,
+    fullName: u.full_name || u.fullName || '',
+    role: u.role as any,
+    organization: u.organization,
+    isActive: u.is_active ?? u.isActive ?? true,
+    isVerified: u.is_verified ?? u.isVerified ?? false,
+    createdAt: u.created_at || u.createdAt || new Date().toISOString(),
+  });
+
   useEffect(() => {
     const initAuth = async () => {
       const storedToken = localStorage.getItem(TOKEN_KEY);
       if (storedToken) {
         try {
           const userData = await fetchMeApi(storedToken);
-          setUser(userData);
+          setUser(mapApiUser(userData));
           setToken(storedToken);
         } catch (e) {
           console.warn('Session expired or invalid token:', e);
@@ -125,8 +136,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const updateProfile = async (fullName?: string, organization?: string) => {
     if (!token) return;
-    const updated = await updateProfileApi(token, fullName, organization);
-    setUser(updated);
+    const updated = await updateProfileApi(token, fullName || '', organization);
+    setUser(mapApiUser(updated));
   };
 
   return (
