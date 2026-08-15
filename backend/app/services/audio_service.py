@@ -145,6 +145,28 @@ class AudioService:
             }
         )
 
+        # 7. Also create AudioCapture record for DSP acoustic fingerprinting pipeline
+        from app.repositories.audio_capture_repository import audio_capture_repository
+        existing_cap = audio_capture_repository.get_by_capture_id(db, str(recording.id))
+        if not existing_cap:
+            audio_capture_repository.create(
+                db,
+                obj_in_data={
+                    "capture_id": str(recording.id),
+                    "user_id": current_user.id,
+                    "product_id": product_id,
+                    "file_name": original_filename,
+                    "file_path": file_path,
+                    "mime_type": content_type or "audio/wav",
+                    "file_size": metadata.file_size,
+                    "duration": metadata.duration,
+                    "sample_rate": metadata.sample_rate,
+                    "channels": metadata.channels,
+                    "evidence_label": "PRODUCT_HARVEST_FIELD_SAMPLE",
+                    "capture_source": "BROWSER_MIC",
+                }
+            )
+
         audit_log_repository.log(
             db,
             action="AUDIO_UPLOADED",

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getAcousticFingerprintApi } from '../services/api';
+import { getAcousticFingerprintApi, analyzeAcousticFingerprintApi } from '../services/api';
 import type { AcousticFingerprint } from '../types';
 import { EcosystemWaveform } from '../components/ui/EcosystemWaveform';
 import { SpectrogramCanvas } from '../components/ui/SpectrogramCanvas';
@@ -24,8 +24,14 @@ export const AcousticAnalysisPage: React.FC = () => {
     setError(null);
     try {
       const recId = parseInt(recordingIdStr, 10);
-      const res = await getAcousticFingerprintApi(token, recId);
-      setData(res);
+      try {
+        const res = await getAcousticFingerprintApi(token, recId);
+        setData(res);
+      } catch (getErr: any) {
+        // If fingerprint not found yet, run DSP analysis pipeline automatically
+        const computedRes = await analyzeAcousticFingerprintApi(token, recId);
+        setData(computedRes);
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to compute Librosa acoustic analysis.');
     } finally {

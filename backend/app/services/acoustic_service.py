@@ -16,8 +16,30 @@ from app.schemas.acoustic import AcousticFingerprintResponse, AcousticFingerprin
 class AcousticService:
     @staticmethod
     def analyze_capture(db: Session, capture_id: str, current_user: User) -> AcousticFingerprintResponse:
-        # 1. Retrieve audio capture
+        # 1. Retrieve audio capture (fallback to AudioRecording if numeric ID)
         capture = audio_capture_repository.get_by_capture_id(db, capture_id)
+        if not capture and capture_id.isdigit():
+            from app.repositories.audio_repository import audio_repository
+            rec = audio_repository.get(db, int(capture_id))
+            if rec:
+                capture = audio_capture_repository.create(
+                    db,
+                    obj_in_data={
+                        "capture_id": str(rec.id),
+                        "user_id": current_user.id,
+                        "product_id": rec.product_id,
+                        "file_name": rec.file_name,
+                        "file_path": rec.file_path,
+                        "mime_type": rec.mime_type,
+                        "file_size": rec.file_size,
+                        "duration": rec.duration,
+                        "sample_rate": rec.sample_rate,
+                        "channels": rec.channels,
+                        "evidence_label": "PRODUCT_HARVEST_FIELD_SAMPLE",
+                        "capture_source": "BROWSER_MIC",
+                    }
+                )
+
         if not capture:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Audio capture '{capture_id}' not found.")
 
