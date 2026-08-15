@@ -30,46 +30,53 @@ class ProductService:
 
     @staticmethod
     def create_product(db: Session, current_user: User, req: ProductCreateRequest) -> ProductProtectedResponse:
-        batch_id = ProductService.generate_batch_id()
-        while product_repository.get_by_batch_id(db, batch_id):
+        try:
             batch_id = ProductService.generate_batch_id()
+            while product_repository.get_by_batch_id(db, batch_id):
+                batch_id = ProductService.generate_batch_id()
 
-        count = db.query(Product).count() + 1
-        echochain_product_id = QRService.generate_product_id(req.product_type, count)
-        
-        # QR Code points to public consumer verification URL
-        verification_url = f"{QRService.DEFAULT_FRONTEND_BASE_URL}/verify/{echochain_product_id}"
-        qr_b64 = QRService.generate_qr_b64(verification_url)
+            count = db.query(Product).count() + 1
+            echochain_product_id = QRService.generate_product_id(req.product_type, count)
+            
+            # QR Code points to public consumer verification URL
+            verification_url = f"{QRService.DEFAULT_FRONTEND_BASE_URL}/verify/{echochain_product_id}"
+            qr_b64 = QRService.generate_qr_b64(verification_url)
 
-        new_product = product_repository.create(
-            db,
-            obj_in_data={
-                "producer_id": current_user.id,
-                "product_name": req.product_name,
-                "product_type": req.product_type,
-                "brand": req.brand,
-                "batch_id": batch_id,
-                "echochain_product_id": echochain_product_id,
-                "qr_code_b64": qr_b64,
-                "region": req.region,
-                "country": req.country,
-                "protected_gps_latitude": req.protected_gps_latitude,
-                "protected_gps_longitude": req.protected_gps_longitude,
-                "harvest_date": req.harvest_date,
-                "description": req.description,
-                "certification_status": req.certification_status,
-                "verification_status": "PENDING",
-            }
-        )
+            new_product = product_repository.create(
+                db,
+                obj_in_data={
+                    "producer_id": current_user.id,
+                    "product_name": req.product_name,
+                    "product_type": req.product_type,
+                    "brand": req.brand,
+                    "batch_id": batch_id,
+                    "echochain_product_id": echochain_product_id,
+                    "qr_code_b64": qr_b64,
+                    "region": req.region,
+                    "country": req.country,
+                    "protected_gps_latitude": req.protected_gps_latitude,
+                    "protected_gps_longitude": req.protected_gps_longitude,
+                    "harvest_date": req.harvest_date,
+                    "description": req.description,
+                    "certification_status": req.certification_status,
+                    "verification_status": "PENDING",
+                }
+            )
 
-        audit_log_repository.log(
-            db,
-            action="PRODUCT_CREATED",
-            user_id=current_user.id,
-            details=f"Created product '{new_product.product_name}' (ID: {echochain_product_id}, Batch: {batch_id})"
-        )
+            audit_log_repository.log(
+                db,
+                action="PRODUCT_CREATED",
+                user_id=current_user.id,
+                details=f"Created product '{new_product.product_name}' (ID: {echochain_product_id}, Batch: {batch_id})"
+            )
 
-        return ProductProtectedResponse.model_validate(new_product)
+            return ProductProtectedResponse.model_validate(new_product)
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Failed to create product batch: {str(e)}"
+            )
 
     @staticmethod
     def update_product(
