@@ -90,7 +90,8 @@ class AuthService:
 
     @staticmethod
     def login_user(db: Session, req: UserLoginRequest, ip_address: Optional[str] = None) -> TokenResponse:
-        user = user_repository.get_by_email(db, req.email)
+        clean_email = req.email.lower().strip() if req.email else ""
+        user = user_repository.get_by_email(db, clean_email)
         if not user or not verify_password(req.password, user.password_hash):
             audit_log_repository.log(
                 db,
