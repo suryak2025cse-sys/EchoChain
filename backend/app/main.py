@@ -1,5 +1,8 @@
-from fastapi import FastAPI, Depends
+import logging
+import traceback
+from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.database import get_db, engine, Base
@@ -7,6 +10,8 @@ from app.api.router import api_router
 from app.api.v1 import auth, products, audio, audio_capture, acoustic, liveness, provenance, ipfs, polygon, verify, certifier, security
 from app.schemas.health import HealthCheckResponse
 from app.services.health_service import HealthService
+
+logger = logging.getLogger(__name__)
 
 # Create database tables (if any defined in models)
 Base.metadata.create_all(bind=engine)
@@ -27,6 +32,17 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Global unhandled exception: {exc}\n{traceback.format_exc()}")
+    return JSONResponse(
+        status_code=500,
+        content={"detail": f"Server Error: {str(exc)}"},
+        headers={"Access-Control-Allow-Origin": "*"}
+    )
+
 
 # Include API Router under /api/v1
 app.include_router(api_router, prefix=settings.API_V1_STR)

@@ -53,11 +53,11 @@ class Settings(BaseSettings):
 
     @property
     def sync_database_url(self) -> str:
-        if self.DATABASE_URL:
-            return self.DATABASE_URL
-        if self.SUPABASE_URL:
-            # If Supabase URL provided without explicit DATABASE_URL
-            return self.SUPABASE_URL
+        if self.DATABASE_URL and self.DATABASE_URL.startswith("postgres"):
+            url = self.DATABASE_URL
+            if url.startswith("postgres://"):
+                url = url.replace("postgres://", "postgresql://", 1)
+            return url
         return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
 
     model_config = SettingsConfigDict(
