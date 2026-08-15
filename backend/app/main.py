@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.database import get_db, engine, Base
 from app.api.router import api_router
-from app.api.v1 import provenance, ipfs, polygon, verify
+from app.api.v1 import auth, products, audio, audio_capture, acoustic, liveness, provenance, ipfs, polygon, verify, certifier, security
 from app.schemas.health import HealthCheckResponse
 from app.services.health_service import HealthService
 
@@ -19,24 +19,37 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# Configure CORS
-if settings.BACKEND_CORS_ORIGINS:
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=settings.BACKEND_CORS_ORIGINS,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+# Configure CORS for all origins
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Include API Router under /api/v1
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
-# Direct root-level aliases required by Phase specs (/api/provenance, /api/ipfs, /api/polygon, /api/verify)
+# Direct root & /api level aliases to guarantee 0 404s across all endpoints
+app.include_router(auth.router, prefix="/api", include_in_schema=False)
+app.include_router(auth.router, prefix="", include_in_schema=False)
+
+app.include_router(products.router, prefix="/api", include_in_schema=False)
+app.include_router(products.router, prefix="", include_in_schema=False)
+
+app.include_router(audio.router, prefix="/api", include_in_schema=False)
+app.include_router(audio_capture.router, prefix="/api", include_in_schema=False)
+app.include_router(acoustic.router, prefix="/api", include_in_schema=False)
+app.include_router(liveness.router, prefix="/api", include_in_schema=False)
+
 app.include_router(provenance.router, prefix="/api", include_in_schema=False)
 app.include_router(ipfs.router, prefix="/api", include_in_schema=False)
 app.include_router(polygon.router, prefix="/api", include_in_schema=False)
 app.include_router(verify.router, prefix="/api", include_in_schema=False)
+
+app.include_router(certifier.router, prefix="/api", include_in_schema=False)
+app.include_router(security.router, prefix="/api", include_in_schema=False)
 
 
 @app.get("/api/health", response_model=HealthCheckResponse, tags=["Health"])
